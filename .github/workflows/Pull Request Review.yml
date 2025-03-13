@@ -3,7 +3,7 @@ name: Pull Request Review
 on:
   pull_request:
     branches: [ "main", "develop" ]
-    types: [opened, edited] 
+    types: [opened, edited]  # Se activa cuando se abre o edita un PR
 
 permissions:
   pull-requests: write
