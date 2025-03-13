@@ -35,14 +35,14 @@ jobs:
               issue_number: context.issue.number,
             });
 
-            const botComment = comments.find(comment => comment.user.login === 'github-actions[bot]' && comment.body.includes('Please answer the following questions'));
+            const botComment = comments.find(comment => comment.user.login === 'github-actions[bot]' && comment.body.includes('Por favor, responde las siguientes preguntas'));
 
             if (!botComment) {
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.issue.number,
-                body: "Please answer the following questions in the PR description:\n\n1. What is the purpose of this PR?\n2. What changes are included?\n3. Have you tested these changes?\n\nOnce you've answered these questions, the PR can be reviewed."
+                body: "Por favor, responde las siguientes preguntas en la descripción del PR:\n\n1. ¿Cuál es el propósito de este PR?\n2. ¿Qué cambios incluye?\n3. ¿Has probado estos cambios?\n4. ¿Hay algún cambio que pueda afectar a la funcionalidad existente?\n\nUna vez que hayas respondido estas preguntas, el PR podrá ser revisado."
               });
             }
 
