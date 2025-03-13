@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   check-description:
-    name: Validate PR Description  # Añade un nombre al job
+    name: Validate PR Description 
     runs-on: ubuntu-latest
 
     steps:
