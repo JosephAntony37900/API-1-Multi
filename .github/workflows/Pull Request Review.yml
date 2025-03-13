@@ -3,6 +3,7 @@ name: Pull Request Review
 on:
   pull_request:
     branches: [ "main", "develop" ]
+    types: [opened, edited]  # Se activa cuando se abre o edita un PR
 
 permissions:
   pull-requests: write
@@ -10,7 +11,7 @@ permissions:
 
 jobs:
   check-description:
-    name: Validate PR Description 
+    name: Validate PR Description
     runs-on: ubuntu-latest
 
     steps:
@@ -28,28 +29,22 @@ jobs:
             echo "::set-output name=pr_description_missing::false"
           fi
 
-      - name: Comment on PR if description is missing
+      - name: Add questions to PR description
         if: steps.check-pr.outputs.pr_description_missing == 'true'
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const { data: comments } = await github.rest.issues.listComments({
+            const pr = context.payload.pull_request;
+            const questions = "Por favor, responde las siguientes preguntas en la descripción del PR:\n\n1. ¿Cuál es el propósito de este PR?\n2. ¿Qué cambios incluye?\n3. ¿Has probado estos cambios?\n4. ¿Hay algún cambio que pueda afectar a la funcionalidad existente?\n\nUna vez que hayas respondido estas preguntas, el PR podrá ser revisado.";
+
+            // Actualiza la descripción del PR con las preguntas
+            await github.rest.pulls.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: context.issue.number,
+              pull_number: pr.number,
+              body: questions
             });
-
-            const botComment = comments.find(comment => comment.user.login === 'github-actions[bot]' && comment.body.includes('Por favor, responde las siguientes preguntas'));
-
-            if (!botComment) {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body: "Por favor, responde las siguientes preguntas en la descripción del PR:\n\n1. ¿Cuál es el propósito de este PR?\n2. ¿Qué cambios incluye?\n3. ¿Has probado estos cambios?\n4. ¿Hay algún cambio que pueda afectar a la funcionalidad existente?\n\nUna vez que hayas respondido estas preguntas, el PR podrá ser revisado."
-              });
-            }
 
       - name: Block PR if description is missing
         if: steps.check-pr.outputs.pr_description_missing == 'true'
