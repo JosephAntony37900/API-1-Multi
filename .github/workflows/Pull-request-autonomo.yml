@@ -4,7 +4,6 @@ on:
   pull_request:
     branches: [ "main", "develop" ]
 
-# Añade permisos explícitos para el GITHUB_TOKEN
 permissions:
   pull-requests: write
   issues: write
