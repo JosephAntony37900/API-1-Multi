@@ -15,8 +15,11 @@ func ProcessDeployEvent(rawData []byte) (int, string) {
 	var eventPayload value_objects.DeployEvent
 
 	if err := json.Unmarshal(rawData, &eventPayload); err != nil {
+		log.Printf("Error al deserializar el payload: %v", err)
 		return 403, "Error al deserializar el payload"
 	}
+
+	log.Printf("Payload recibido: %+v", eventPayload) // Log del payload deserializado
 
 	log.Printf("Evento de despliegue recibido con acción de %s", eventPayload.Action)
 
@@ -33,6 +36,8 @@ func ProcessDeployEvent(rawData []byte) (int, string) {
 	default:
 		message = "Estado de despliegue no manejado"
 	}
+
+	log.Printf("Mensaje a enviar a Discord: %s", message) // Log del mensaje
 
 	// Enviar el mensaje a Discord
 	if err := sendToDiscord(message); err != nil {
