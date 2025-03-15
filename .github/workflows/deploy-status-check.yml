@@ -62,7 +62,7 @@ jobs:
       - name: Notify Webhook
         run: |
           STATUS="${{ steps.api-status.outputs.status }}"
-          WEBHOOK_URL="http://tuservidor.com/webhook/process-deploy"  # Cambia esto por la URL de tu servidor
+          WEBHOOK_URL="https://93d1-2806-2f0-8181-f729-4d6c-eff6-4ab9-d32b.ngrok-free.app/webhook/process-deploy"  # Cambia esto por la URL de tu servidor
           PAYLOAD=$(jq -n \
             --arg status "$STATUS" \
             --arg repo "${{ github.repository }}" \
