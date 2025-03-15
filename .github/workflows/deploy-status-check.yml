@@ -8,7 +8,7 @@ on:
     branches:
       - main  
 
-# se añade los permisos necesarios para el GITHUB_TOKEN
+# Añade los permisos necesarios para el GITHUB_TOKEN
 permissions:
   statuses: write  # Permiso para crear estados de commit
 
@@ -19,6 +19,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Load environment variables
+        run: |
+          echo "DISCORD_WEBHOOK_TEST=$DISCORD_WEBHOOK_TEST" >> $GITHUB_ENV
 
       - name: Verify API status
         id: api-status

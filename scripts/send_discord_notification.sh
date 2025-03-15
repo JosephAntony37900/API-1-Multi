@@ -23,4 +23,4 @@ fi
 # Enviar el mensaje a Discord
 curl -X POST -H "Content-Type: application/json" \
   -d "{\"content\": \"$message\"}" \
-  $DISCORD_WEBHOOK_URL
+  "$DISCORD_WEBHOOK_URL"
