@@ -20,7 +20,7 @@ jobs:
         id: api-status
         run: |
           # URL de tu API en AWS
-          API_URL="http://tu-url-de-api.com"  # Cambia esto por la URL/IP de tu API
+          API_URL="http://54.85.123.137/"
 
           # Hacer una solicitud HTTP a la API
           response=$(curl -s -o /dev/null -w "%{http_code}" $API_URL)
