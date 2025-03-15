@@ -8,7 +8,7 @@ on:
     branches:
       - main  
 
-# se añade los permisos necesarios para el GITHUB_TOKEN
+# Añade los permisos necesarios para el GITHUB_TOKEN
 permissions:
   statuses: write  # Permiso para crear estados de commit
 
@@ -63,7 +63,7 @@ jobs:
               });
             }
 
-            - name: Send Discord notification
-      - run: |
+      - name: Send Discord notification
+        run: |
           chmod +x ./scripts/send_discord_notification.sh  # Dar permisos de ejecución al script
           ./scripts/send_discord_notification.sh "${{ steps.api-status.outputs.status }}"
