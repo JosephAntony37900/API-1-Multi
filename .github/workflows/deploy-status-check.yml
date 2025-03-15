@@ -8,6 +8,10 @@ on:
     branches:
       - main  # Se activa cuando se fusiona un pull request a la rama main
 
+# Añade los permisos necesarios para el GITHUB_TOKEN
+permissions:
+  statuses: write  # Permiso para crear estados de commit
+
 jobs:
   check-deploy-status:
     runs-on: ubuntu-latest
