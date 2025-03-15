@@ -20,5 +20,4 @@ check_api_status() {
     fi
 }
 
-# Ejecutar la verificación
 check_api_status
