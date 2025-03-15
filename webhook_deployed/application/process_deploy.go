@@ -19,8 +19,6 @@ func ProcessDeployEvent(rawData []byte) (int, string) {
 		return 403, "Error al deserializar el payload"
 	}
 
-	log.Printf("Payload recibido: %+v", eventPayload) // Log del payload deserializado
-
 	log.Printf("Evento de despliegue recibido con acción de %s", eventPayload.Action)
 
 	var message string

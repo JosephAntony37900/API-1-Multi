@@ -3,14 +3,10 @@ name: Deploy Status Check
 on:
   push:
     branches:
-      - main  # Se activa cuando se hace push a la rama main
+      - main
   pull_request:
     branches:
-      - main  # Se activa cuando se fusiona un pull request a la rama main
-
-# Añade los permisos necesarios para el GITHUB_TOKEN
-permissions:
-  statuses: write  # Permiso para crear estados de commit
+      - main
 
 jobs:
   check-deploy-status:
@@ -23,8 +19,8 @@ jobs:
       - name: Verify API status
         id: api-status
         run: |
-          chmod +x ./scripts/check_api_status.sh  # Dar permisos de ejecución al script
-          ./scripts/check_api_status.sh           # Ejecutar el script
+          chmod +x ./scripts/check_api_status.sh
+          ./scripts/check_api_status.sh
 
       - name: Set deployment status
         uses: actions/github-script@v6
@@ -62,3 +58,24 @@ jobs:
                 description: "The API is off. No further action required.",
               });
             }
+
+      - name: Notify Webhook
+        run: |
+          STATUS="${{ steps.api-status.outputs.status }}"
+          WEBHOOK_URL="http://tuservidor.com/webhook/process-deploy"  # Cambia esto por la URL de tu servidor
+          PAYLOAD=$(jq -n \
+            --arg status "$STATUS" \
+            --arg repo "${{ github.repository }}" \
+            --arg sender "${{ github.actor }}" \
+            '{
+              action: "deploy",
+              repository: { name: $repo },
+              sender: { login: $sender },
+              status: ($status == "success" ? "on" : ($status == "failed" ? "on" : "off")),
+              success: ($status == "success")
+            }')
+
+          curl -X POST "$WEBHOOK_URL" \
+               -H "Content-Type: application/json" \
+               -H "X-GitHub-Event: deploy" \
+               -d "$PAYLOAD"
