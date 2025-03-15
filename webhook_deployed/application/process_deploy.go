@@ -35,7 +35,7 @@ func ProcessDeployEvent(rawData []byte) (int, string) {
 		message = "Estado de despliegue no manejado"
 	}
 
-	log.Printf("Mensaje a enviar a Discord: %s", message) // Log del mensaje
+	log.Printf("Mensaje a enviar a Discord: %s", message) 
 
 	// Enviar el mensaje a Discord
 	if err := sendToDiscord(message); err != nil {
