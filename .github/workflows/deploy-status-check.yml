@@ -1,0 +1,117 @@
+name: Deploy Status Check
+
+on:
+  push:
+    branches:
+      - main  # Se activa cuando se hace push a la rama main
+  pull_request:
+    branches:
+      - main  # Se activa cuando se fusiona un pull request a la rama main
+
+jobs:
+  check-deploy-status:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify API status
+        id: api-status
+        run: |
+          # URL de tu API en AWS
+          API_URL="http://tu-url-de-api.com"  # Cambia esto por la URL/IP de tu API
+
+          # Hacer una solicitud HTTP a la API
+          response=$(curl -s -o /dev/null -w "%{http_code}" $API_URL)
+
+          if [[ $response -eq 200 ]]; then
+            echo "API is up and running"
+            echo "::set-output name=status::success"
+          else
+            echo "API is down or returned an error"
+            echo "::set-output name=status::failed"
+          fi
+
+      - name: Set deployment status
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const status = "${{ steps.api-status.outputs.status }}";
+            const commitSha = "${{ github.sha }}";
+
+            if (status === "success") {
+              await github.rest.repos.createCommitStatus({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                sha: commitSha,
+                state: "success",
+                context: "Deploy Status",
+                description: "The API is up and running.",
+              });
+            } else if (status === "failed") {
+              await github.rest.repos.createCommitStatus({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                sha: commitSha,
+                state: "failure",
+                context: "Deploy Status",
+                description: "The API is down or returned an error.",
+              });
+            } else {
+              await github.rest.repos.createCommitStatus({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                sha: commitSha,
+                state: "pending",
+                context: "Deploy Status",
+                description: "No recent changes detected. Checking API status...",
+              });
+            }
+
+      - name: Check if API is on/off
+        if: ${{ steps.api-status.outputs.status != 'success' && steps.api-status.outputs.status != 'failed' }}
+        run: |
+          # URL de tu API en AWS
+          API_URL="http://tu-url-de-api.com"  # Cambia esto por la URL/IP de tu API
+
+          # Hacer una solicitud HTTP a la API
+          response=$(curl -s -o /dev/null -w "%{http_code}" $API_URL)
+
+          if [[ $response -eq 200 ]]; then
+            echo "API is on"
+            echo "::set-output name=status::on"
+          else
+            echo "API is off"
+            echo "::set-output name=status::off"
+          fi
+
+      - name: Report API on/off status
+        if: ${{ steps.api-status.outputs.status != 'success' && steps.api-status.outputs.status != 'failed' }}
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const status = "${{ steps.api-status.outputs.status }}";
+            const commitSha = "${{ github.sha }}";
+
+            if (status === "on") {
+              await github.rest.repos.createCommitStatus({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                sha: commitSha,
+                state: "success",
+                context: "Deploy Status",
+                description: "The API is on.",
+              });
+            } else if (status === "off") {
+              await github.rest.repos.createCommitStatus({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                sha: commitSha,
+                state: "failure",
+                context: "Deploy Status",
+                description: "The API is off.",
+              });
+            }
