@@ -3,12 +3,12 @@ name: Deploy Status Check
 on:
   push:
     branches:
-      - main 
+      - main  # Se activa cuando se hace push a la rama main
   pull_request:
     branches:
-      - main  
+      - main  # Se activa cuando se fusiona un pull request a la rama main
 
-# se añade los permisos necesarios para el GITHUB_TOKEN
+# Añade los permisos necesarios para el GITHUB_TOKEN
 permissions:
   statuses: write  # Permiso para crear estados de commit
 
@@ -19,10 +19,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Load environment variables
-        run: |
-          echo "DISCORD_WEBHOOK_TEST=$DISCORD_WEBHOOK_TEST" >> $GITHUB_ENV
 
       - name: Verify API status
         id: api-status
@@ -66,8 +62,3 @@ jobs:
                 description: "The API is off. No further action required.",
               });
             }
-
-      - name: Send Discord notification
-        run: |
-          chmod +x ./scripts/send_discord_notification.sh  # Dar permisos de ejecución al script
-          ./scripts/send_discord_notification.sh "${{ steps.api-status.outputs.status }}"
