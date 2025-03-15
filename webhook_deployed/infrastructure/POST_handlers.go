@@ -23,8 +23,6 @@ func HandleDeployEvent(ctx *gin.Context) {
 		return
 	}
 
-	log.Printf("Payload recibido: %s", string(rawData)) // Log del payload recibido
-
 	var statusCode int
 	var message string
 
