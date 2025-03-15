@@ -37,7 +37,6 @@ func ProcessDeployEvent(rawData []byte) (int, string) {
 
 	log.Printf("Mensaje a enviar a Discord: %s", message) 
 
-	// Enviar el mensaje a Discord
 	if err := sendToDiscord(message); err != nil {
 		log.Printf("Error al enviar el mensaje a Discord: %v", err)
 		return 500, "Error al enviar el mensaje a Discord"
