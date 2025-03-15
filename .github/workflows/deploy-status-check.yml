@@ -8,7 +8,7 @@ on:
     branches:
       - main  # Se activa cuando se fusiona un pull request a la rama main
 
-# esto añade los permisos necesarios para el GITHUB_TOKEN
+# Añade los permisos necesarios para el GITHUB_TOKEN
 permissions:
   statuses: write  # Permiso para crear estados de commit
 
@@ -62,3 +62,7 @@ jobs:
                 description: "The API is off. No further action required.",
               });
             }
+
+      - name: Send Discord notification
+        run: |
+          ./scripts/send_discord_notification.sh "${{ steps.api-status.outputs.status }}"
