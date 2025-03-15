@@ -63,6 +63,7 @@ jobs:
               });
             }
 
-      - name: Send Discord notification
-        run: |
+            - name: Send Discord notification
+      - run: |
+          chmod +x ./scripts/send_discord_notification.sh  # Dar permisos de ejecución al script
           ./scripts/send_discord_notification.sh "${{ steps.api-status.outputs.status }}"
