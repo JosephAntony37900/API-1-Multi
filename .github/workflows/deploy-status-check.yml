@@ -3,10 +3,10 @@ name: Deploy Status Check
 on:
   push:
     branches:
-      - main  # Se activa cuando se hace push a la rama main
+      - main 
   pull_request:
     branches:
-      - main  # Se activa cuando se fusiona un pull request a la rama main
+      - main  
 
 # se añade los permisos necesarios para el GITHUB_TOKEN
 permissions:
