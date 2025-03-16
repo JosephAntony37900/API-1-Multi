@@ -3,8 +3,10 @@ package helpers
 import (
 	"database/sql"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
+	"os"
 	"sync"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 var (
@@ -16,12 +18,24 @@ var (
 func NewMySQLConnection() (*sql.DB, error) {
 	var err error
 	once.Do(func() {
-		dsn := "admin:chocolate1804@tcp(database-1.c3g30jgzgku5.us-east-1.rds.amazonaws.com:3306)/multi_digisan"
+		// Obtener variables de entorno
+		mysqlUser := os.Getenv("MYSQL_USER")
+		mysqlPassword := os.Getenv("MYSQL_PASSWORD")
+		mysqlHost := os.Getenv("MYSQL_HOST")
+		mysqlPort := os.Getenv("MYSQL_PORT")
+		mysqlDatabase := os.Getenv("MYSQL_DATABASE")
+
+		// Construir el DSN
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", mysqlUser, mysqlPassword, mysqlHost, mysqlPort, mysqlDatabase)
+
+		// Conectar a la base de datos
 		db, err = sql.Open("mysql", dsn)
 		if err != nil {
 			err = fmt.Errorf("error conectando con MySQL: %w", err)
 			return
 		}
+
+		// Verificar la conexión
 		if err = db.Ping(); err != nil {
 			err = fmt.Errorf("error haciendo ping a MySQL: %w", err)
 			return

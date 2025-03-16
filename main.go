@@ -16,6 +16,7 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Fatalf("Error cargando el archivo .env: %v", err)
 	}
+	
 
 	// Inicializar la conexión a la base de datos
 	db, err := helpers.NewMySQLConnection()
@@ -56,4 +57,5 @@ func main() {
 
 	// Iniciar el servidor
 	engine.Run(":8000")
+	
 }
