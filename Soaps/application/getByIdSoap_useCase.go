@@ -9,7 +9,7 @@ type GetByIdSoap struct {
 	repo repository.SoapsRepository
 }
 
-func NewFetByIdSoap(repo repository.SoapsRepository) *GetByIdSoap{
+func NewGetByIdSoap(repo repository.SoapsRepository) *GetByIdSoap{
 	return &GetByIdSoap{repo: repo}
 }
 
