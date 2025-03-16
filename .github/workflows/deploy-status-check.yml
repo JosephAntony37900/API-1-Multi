@@ -1,0 +1,81 @@
+name: Deploy Status Check
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check-deploy-status:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify API status
+        id: api-status
+        run: |
+          chmod +x ./scripts/check_api_status.sh
+          ./scripts/check_api_status.sh
+
+      - name: Set deployment status
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const status = "${{ steps.api-status.outputs.status }}";
+            const commitSha = "${{ github.sha }}";
+
+            if (status === "success") {
+              await github.rest.repos.createCommitStatus({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                sha: commitSha,
+                state: "success",
+                context: "Deploy Status",
+                description: "The API is up and running.",
+              });
+            } else if (status === "failed") {
+              await github.rest.repos.createCommitStatus({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                sha: commitSha,
+                state: "failure",
+                context: "Deploy Status",
+                description: "The API is down or returned an error.",
+              });
+            } else if (status === "off") {
+              await github.rest.repos.createCommitStatus({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                sha: commitSha,
+                state: "pending",
+                context: "Deploy Status",
+                description: "The API is off. No further action required.",
+              });
+            }
+
+      - name: Notify Webhook
+        run: |
+          STATUS="${{ steps.api-status.outputs.status }}"
+          WEBHOOK_URL="https://93d1-2806-2f0-8181-f729-4d6c-eff6-4ab9-d32b.ngrok-free.app/webhook/process-deploy"
+          PAYLOAD=$(jq -n \
+            --arg status "$STATUS" \
+            --arg repo "${{ github.repository }}" \
+            --arg sender "${{ github.actor }}" \
+            '{
+              action: "deploy",
+              repository: { name: $repo },
+              sender: { login: $sender },
+              status: (if $status == "success" then "on" elif $status == "failed" then "on" else "off" end),
+              success: ($status == "success")
+            }')
+
+          curl -X POST "$WEBHOOK_URL" \
+               -H "Content-Type: application/json" \
+               -H "X-GitHub-Event: deploy" \
+               -d "$PAYLOAD"
