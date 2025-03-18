@@ -2,9 +2,13 @@ package main
 
 import (
 	repo_soap "github.com/JosephAntony37900/API-1-Multi/Soaps/infrastructure/repository"
-	"github.com/JosephAntony37900/API-1-Multi/Soaps/application"
-	"github.com/JosephAntony37900/API-1-Multi/Soaps/infrastructure/controllers"
-	"github.com/JosephAntony37900/API-1-Multi/Soaps/infrastructure/routes"
+	app_soap "github.com/JosephAntony37900/API-1-Multi/Soaps/application"
+	control_soap "github.com/JosephAntony37900/API-1-Multi/Soaps/infrastructure/controllers"
+	routes_soap "github.com/JosephAntony37900/API-1-Multi/Soaps/infrastructure/routes"
+	repo_users "github.com/JosephAntony37900/API-1-Multi/Users/infraestructure/repository"
+	app_users "github.com/JosephAntony37900/API-1-Multi/Users/application"
+	control_users "github.com/JosephAntony37900/API-1-Multi/Users/infraestructure/controllers"
+	routes_users "github.com/JosephAntony37900/API-1-Multi/Users/infraestructure/routes"
 	"github.com/JosephAntony37900/API-1-Multi/helpers"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -25,28 +29,43 @@ func main() {
 	}
 	defer db.Close()
 
-	// Crear el repositorio
+	// repositorios
 	soapRepo := repo_soap.NewSoapRepoMySQL(db)
+	userRepo := repo_users.NewCreateUserRepoMySQL(db)
 
-	// Crear los casos de uso
-	createSoapUseCase := application.NewCreateSoap(soapRepo)
-	getAllSoapsUseCase := application.NewGetAllSoaps(soapRepo)
-	getByIdSoapUseCase := application.NewGetByIdSoap(soapRepo)
-	updateSoapUseCase := application.NewUpdateSoaps(soapRepo)
-	deleteSoapUseCase := application.NewDeleteSoap(soapRepo)
+	// casos de uso de soap
+	createSoapUseCase := app_soap.NewCreateSoap(soapRepo)
+	getAllSoapsUseCase := app_soap.NewGetAllSoaps(soapRepo)
+	getByIdSoapUseCase := app_soap.NewGetByIdSoap(soapRepo)
+	updateSoapUseCase := app_soap.NewUpdateSoaps(soapRepo)
+	deleteSoapUseCase := app_soap.NewDeleteSoap(soapRepo)
 
-	// Crear los controladores
-	createSoapController := controllers.NewCreateSoapController(createSoapUseCase)
-	getAllSoapsController := controllers.NewGetAllSoapsController(getAllSoapsUseCase)
-	getByIdSoapController := controllers.NewGetByIdSoapController(getByIdSoapUseCase)
-	updateSoapController := controllers.NewUpdateSoapController(updateSoapUseCase)
-	deleteSoapController := controllers.NewDeleteSoapController(deleteSoapUseCase)
+	// casos de uso de users
+	createUsersUseCase := app_users.NewCreateUser(userRepo)
+	getAllUsersUseCase := app_users.NewGetUsers(userRepo)
+	deleteUsersUseCase := app_users.NewDeleteUser(userRepo)
+	loginUserUseCase := app_users.NewLoginUser(userRepo)
+	updateUsersUseCase := app_users.NewUpdateUser(userRepo)
+
+	// Crontoladores de soap
+	createSoapController := control_soap.NewCreateSoapController(createSoapUseCase)
+	getAllSoapsController := control_soap.NewGetAllSoapsController(getAllSoapsUseCase)
+	getByIdSoapController := control_soap.NewGetByIdSoapController(getByIdSoapUseCase)
+	updateSoapController := control_soap.NewUpdateSoapController(updateSoapUseCase)
+	deleteSoapController := control_soap.NewDeleteSoapController(deleteSoapUseCase)
+
+	// controladores de users
+	createUserController := control_users.NewCreateUserController(createUsersUseCase)
+	getAllUsersController := control_users.NewUsersController(getAllUsersUseCase)
+	deleteUsersController := control_users.NewDeleteUserController(deleteUsersUseCase)
+	loginUserController := control_users.NewLoginUserController(loginUserUseCase)
+	updateUsersController := control_users.NewUpdateUserController(updateUsersUseCase)
 
 	// Configurar el enrutador
 	engine := gin.Default()
 
-	// Configurar las rutas
-	routes.SetupRoutes(
+	// Configurar las rutas de soap
+	routes_soap.SetupRoutes(
 		engine,
 		createSoapController,
 		getAllSoapsController,
@@ -54,6 +73,8 @@ func main() {
 		updateSoapController,
 		deleteSoapController,
 	)
+
+	routes_users.SetupUserRoutes(engine, createUserController, loginUserController, getAllUsersController, deleteUsersController, updateUsersController)
 
 	// Iniciar el servidor
 	engine.Run(":8000")
