@@ -1,18 +1,19 @@
 package main
 
 import (
-	repo_soap "github.com/JosephAntony37900/API-1-Multi/Soaps/infrastructure/repository"
+	"log"
+
 	app_soap "github.com/JosephAntony37900/API-1-Multi/Soaps/application"
 	control_soap "github.com/JosephAntony37900/API-1-Multi/Soaps/infrastructure/controllers"
+	repo_soap "github.com/JosephAntony37900/API-1-Multi/Soaps/infrastructure/repository"
 	routes_soap "github.com/JosephAntony37900/API-1-Multi/Soaps/infrastructure/routes"
-	repo_users "github.com/JosephAntony37900/API-1-Multi/Users/infraestructure/repository"
 	app_users "github.com/JosephAntony37900/API-1-Multi/Users/application"
 	control_users "github.com/JosephAntony37900/API-1-Multi/Users/infraestructure/controllers"
+	repo_users "github.com/JosephAntony37900/API-1-Multi/Users/infraestructure/repository"
 	routes_users "github.com/JosephAntony37900/API-1-Multi/Users/infraestructure/routes"
 	"github.com/JosephAntony37900/API-1-Multi/helpers"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"log"
 )
 
 func main() {
@@ -20,7 +21,6 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Fatalf("Error cargando el archivo .env: %v", err)
 	}
-	
 
 	// Inicializar la conexión a la base de datos
 	db, err := helpers.NewMySQLConnection()
@@ -64,6 +64,9 @@ func main() {
 	// Configurar el enrutador
 	engine := gin.Default()
 
+	//Agregar el fucking CORS
+	engine.Use(helpers.SetupCORS())
+
 	// Configurar las rutas de soap
 	routes_soap.SetupRoutes(
 		engine,
@@ -78,5 +81,5 @@ func main() {
 
 	// Iniciar el servidor
 	engine.Run(":8000")
-	
+
 }

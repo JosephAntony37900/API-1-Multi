@@ -1,10 +1,12 @@
 package controllers
 
 import (
-	"github.com/JosephAntony37900/API-1-Multi/Users/application"
-	"github.com/gin-gonic/gin"
+	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/JosephAntony37900/API-1-Multi/Users/application"
+	"github.com/gin-gonic/gin"
 )
 
 type LoginUserController struct {
@@ -23,6 +25,8 @@ func (c *LoginUserController) Handle(ctx *gin.Context) {
 		Password string `json:"Contraseña"`
 	}
 
+	fmt.Println("emailsito: ", request.Email)
+
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		log.Printf("Error en la petición del body: %v", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Petición del body inválida"})
@@ -30,6 +34,7 @@ func (c *LoginUserController) Handle(ctx *gin.Context) {
 	}
 
 	valid, err := c.LoginUser.Run(request.Email, request.Password)
+	fmt.Println("Contra: ", request.Password)
 	if err != nil || !valid {
 		log.Printf("Error en el login: %v", err)
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Credenciales incorrectas"})
