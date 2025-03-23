@@ -9,6 +9,10 @@ import (
 	app_users "github.com/JosephAntony37900/API-1-Multi/Users/application"
 	control_users "github.com/JosephAntony37900/API-1-Multi/Users/infraestructure/controllers"
 	routes_users "github.com/JosephAntony37900/API-1-Multi/Users/infraestructure/routes"
+	repo_levels "github.com/JosephAntony37900/API-1-Multi/Level_reading/infrastructure/repository"
+	app_levels "github.com/JosephAntony37900/API-1-Multi/Level_reading/application"
+	control_levels "github.com/JosephAntony37900/API-1-Multi/Level_reading/infrastructure/controllers"
+	routes_levels "github.com/JosephAntony37900/API-1-Multi/Level_reading/infrastructure/routes"
 	"github.com/JosephAntony37900/API-1-Multi/helpers"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -32,6 +36,8 @@ func main() {
 	// repositorios
 	soapRepo := repo_soap.NewSoapRepoMySQL(db)
 	userRepo := repo_users.NewCreateUserRepoMySQL(db)
+	levelRepo := repo_levels.NewLevelReadingRepoMySQL(db)
+
 
 	// casos de uso de soap
 	createSoapUseCase := app_soap.NewCreateSoap(soapRepo)
@@ -47,6 +53,11 @@ func main() {
 	loginUserUseCase := app_users.NewLoginUser(userRepo)
 	updateUsersUseCase := app_users.NewUpdateUser(userRepo)
 
+	// casos de uso de Level_reading
+	createLevelUseCase := app_levels.NewCreateLevelReading(levelRepo)
+	getAllLevelsUseCase := app_levels.NewGetLevelReading(levelRepo)
+	getByIdLevelUseCase := app_levels.NewGetByIdLevelReading(levelRepo)
+	
 	// Crontoladores de soap
 	createSoapController := control_soap.NewCreateSoapController(createSoapUseCase)
 	getAllSoapsController := control_soap.NewGetAllSoapsController(getAllSoapsUseCase)
@@ -61,6 +72,11 @@ func main() {
 	loginUserController := control_users.NewLoginUserController(loginUserUseCase)
 	updateUsersController := control_users.NewUpdateUserController(updateUsersUseCase)
 
+	// Controladores de Level_reading
+	createLevelController := control_levels.NewCreateLevelReadingController(createLevelUseCase)
+	getAllLevelsController := control_levels.NewGetLevelReadingsController(getAllLevelsUseCase)
+	getByIdLevelController := control_levels.NewGetLevelReadingByIdController(getByIdLevelUseCase)
+	
 	// Configurar el enrutador
 	engine := gin.Default()
 
@@ -75,6 +91,15 @@ func main() {
 	)
 
 	routes_users.SetupUserRoutes(engine, createUserController, loginUserController, getAllUsersController, deleteUsersController, updateUsersController)
+
+    // Configurar las rutas de Level_reading
+	routes_levels.SetupLevelReadingRoutes(
+		engine,
+		createLevelController,
+		getAllLevelsController,
+		getByIdLevelController,
+		
+	)
 
 	// Iniciar el servidor
 	engine.Run(":8000")
