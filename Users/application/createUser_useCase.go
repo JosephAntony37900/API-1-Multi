@@ -2,9 +2,10 @@ package application
 
 import (
 	"fmt"
+
 	"github.com/JosephAntony37900/API-1-Multi/Users/domain/entities"
 	"github.com/JosephAntony37900/API-1-Multi/Users/domain/repository"
-    "github.com/JosephAntony37900/API-1-Multi/helpers"
+	"github.com/JosephAntony37900/API-1-Multi/helpers"
 )
 
 type CreateUsers struct {
@@ -22,6 +23,8 @@ func (cu *CreateUsers) Run(nombre string, email string, contraseña string) erro
 	}
 
 	user := entities.Users{Nombre: nombre, Email: email, Contraseña: hashedPassword}
+	fmt.Println("Contraseña original en el UseCase: ", contraseña)
+	fmt.Println("Hash nuevo:", hashedPassword, "Longitud:", len(hashedPassword))
 	if err := cu.repo.Save(user); err != nil {
 		return fmt.Errorf("error al guardar el usuario: %w", err)
 	}
