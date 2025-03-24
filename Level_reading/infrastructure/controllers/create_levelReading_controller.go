@@ -3,7 +3,7 @@ package controllers
 import (
 	"log"
 	"net/http"
-	_"strconv"
+	"time"
 
 	application "github.com/JosephAntony37900/API-1-Multi/Level_reading/application"
 	"github.com/gin-gonic/gin"
@@ -21,9 +21,9 @@ func (c *CreateLevelReadingController) Handle(ctx *gin.Context) {
 	log.Println("Recibe la petición para crear un nivel de lectura")
 
 	var request struct {
-		Fecha       int     `json:"fecha"`
-		Id_Jabon    int     `json:"id_jabon"`
-		Nivel_Jabon float64 `json:"nivel_jabon"`
+		Fecha       string  `json:"fecha"`       // Fecha como string (ISO8601: "2023-03-22T15:04:05Z")
+		Id_Jabon    int     `json:"id_jabon"`   
+		Nivel_Jabon float64 `json:"nivel_jabon"` 
 	}
 
 	if err := ctx.ShouldBindJSON(&request); err != nil {
@@ -32,10 +32,20 @@ func (c *CreateLevelReadingController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	log.Printf("Creando nivel de lectura: Fecha=%d, Id_Jabon=%d, Nivel_Jabon=%f",
-		request.Fecha, request.Id_Jabon, request.Nivel_Jabon)
+	fecha, err := time.Parse(time.RFC3339, request.Fecha) //le doy el formato ISO8601
+	if err != nil {
+		log.Printf("Error convirtiendo la fecha: %v", err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Formato de fecha inválido"})
+		return
+	}
 
-	if err := c.createUseCase.Run(request.Fecha, request.Id_Jabon, request.Nivel_Jabon); err != nil {
+	// Convierto time.Time a timestamp (int64)
+	timestamp := fecha.Unix()
+
+	log.Printf("Creando nivel de lectura: Fecha=%s, Id_Jabon=%d, Nivel_Jabon=%f",
+		fecha.String(), request.Id_Jabon, request.Nivel_Jabon)
+
+	if err := c.createUseCase.Run(timestamp, request.Id_Jabon, request.Nivel_Jabon); err != nil {
 		log.Printf("Error creando el nivel de lectura: %v", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

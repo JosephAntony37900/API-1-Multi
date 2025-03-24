@@ -1,8 +1,13 @@
 package entities
 
+import "time"
+
+
 type Level_Reading struct{
 	Id int
-	Fecha int
+	Fecha time.Time
 	Id_Jabon int
-	Nivel_Jabon float64
+	Nivel_Jabon int
+	Jabon_Nombre string
+	Nivel_Texto  string
 }
