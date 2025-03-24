@@ -22,7 +22,7 @@ func (c *LoginUserController) Handle(ctx *gin.Context) {
 
 	var request struct {
 		Email    string `json:"Email"`
-		Password string `json:"Contraseña"`
+		Password string `json:"Contrasena"`
 	}
 
 	fmt.Println("emailsito: ", request.Email)
@@ -33,13 +33,18 @@ func (c *LoginUserController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	valid, err := c.LoginUser.Run(request.Email, request.Password)
+	user, valid, err := c.LoginUser.Run(request.Email, request.Password)
 	fmt.Println("Contra: ", request.Password)
 	if err != nil || !valid {
 		log.Printf("Error en el login: %v", err)
+		log.Printf(request.Email, request.Password)
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Credenciales incorrectas"})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "Login exitoso"})
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "Login exitoso",
+		"user":    user,
+		"valid":   valid,
+	})
 }
