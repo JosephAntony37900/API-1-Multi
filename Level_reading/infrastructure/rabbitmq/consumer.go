@@ -6,6 +6,10 @@ import (
     "github.com/streadway/amqp"
     "log"
 	"fmt"
+	"strconv"
+
+	"github.com/JosephAntony37900/API-1-Multi/Level_reading/application"
+	
 )
 
 // ConfigureAndConsume configura la cola y comienza a consumir mensajes.
@@ -82,4 +86,28 @@ func ConfigureAndConsume(queueName, routingKey, exchangeName string, handleMessa
 func logError(format string, args ...interface{}) error {
     log.Printf(format, args...)
     return fmt.Errorf(format, args...)
+}
+
+func StartLevelReadingConsumer(service *application.LevelReadingMessageService, queueName, routingKey, exchangeName string) error {
+	handleMessage := func(msg amqp.Delivery) {
+		log.Printf("Received a message: %s", msg.Body)
+
+		// Parsear el mensaje recibido (nivel de lectura)
+		level, err := strconv.ParseFloat(string(msg.Body), 64)
+		if err != nil {
+			log.Printf("Error al parsear el nivel de lectura: %v", err)
+			return
+		}
+
+		// Suponiendo un ID de jabón fijo (o cambia según tus requisitos)
+		idJabon := 1 // Cambia este valor si el ID del jabón se obtiene dinámicamente
+
+		// Procesar el mensaje con el servicio de negocio
+		err = service.ProcessMessage(level, idJabon)
+		if err != nil {
+			log.Printf("Error al procesar el mensaje: %v", err)
+		}
+	}
+
+	return ConfigureAndConsume(queueName, routingKey, exchangeName, handleMessage)
 }

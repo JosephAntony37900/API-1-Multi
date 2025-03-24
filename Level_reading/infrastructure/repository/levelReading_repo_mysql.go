@@ -91,3 +91,33 @@ func (repo *levelReadingRepoMySQL) GetAll() ([]entities.Level_Reading, error) {
 	}
 	return levelReadings, nil
 }
+
+func (repo *levelReadingRepoMySQL) GetLast() (*entities.Level_Reading, error) {
+	query := `
+		SELECT ln.Id, ln.Fecha, ln.Id_Jabon, j.Nombre AS Jabon_Nombre, ln.Nivel_Jabon, nj.Descripcion AS Nivel_Texto
+		FROM Lectura_Nivel ln
+		JOIN Jabon j ON ln.Id_Jabon = j.Id
+		JOIN Nivel_Jabon nj ON ln.Nivel_Jabon = nj.Id
+		ORDER BY ln.Id DESC LIMIT 1
+	`
+	row := repo.db.QueryRow(query)
+
+	var levelReading entities.Level_Reading
+	var fechaString string
+
+	if err := row.Scan(&levelReading.Id, &fechaString, &levelReading.Id_Jabon, &levelReading.Jabon_Nombre, &levelReading.Nivel_Jabon, &levelReading.Nivel_Texto); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil // No hay registros en la base de datos
+		}
+		return nil, err
+	}
+
+	// Convertir la fecha a time.Time
+	fecha, err := time.Parse("2006-01-02 15:04:05", fechaString)
+	if err != nil {
+		return nil, fmt.Errorf("error al parsear la fecha: %w", err)
+	}
+	levelReading.Fecha = fecha
+
+	return &levelReading, nil
+}
