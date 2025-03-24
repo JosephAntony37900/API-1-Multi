@@ -5,6 +5,8 @@ import (
 	"errors"
 	"github.com/JosephAntony37900/API-1-Multi/Level_reading/domain/entities"
 	"github.com/JosephAntony37900/API-1-Multi/Level_reading/domain/repository"
+	"fmt"
+	"time"
 )
 
 type levelReadingRepoMySQL struct {
@@ -16,7 +18,7 @@ func NewLevelReadingRepoMySQL(db *sql.DB) repository.Level_ReadingRepository {
 }
 
 func (repo *levelReadingRepoMySQL) Save(levelReading entities.Level_Reading) error {
-	query := "INSERT INTO level_readings (Fecha, Id_Jabon, Nivel_Jabon) VALUES (?, ?, ?)"
+	query := "INSERT INTO Lectura_Nivel (Fecha, Id_Jabon, Nivel_Jabon) VALUES (?, ?, ?)"
 	_, err := repo.db.Exec(query, levelReading.Fecha, levelReading.Id_Jabon, levelReading.Nivel_Jabon)
 	if err != nil {
 		return err
@@ -25,21 +27,41 @@ func (repo *levelReadingRepoMySQL) Save(levelReading entities.Level_Reading) err
 }
 
 func (repo *levelReadingRepoMySQL) FindById(id int) (*entities.Level_Reading, error) {
-	query := "SELECT Id, Fecha, Id_Jabon, Nivel_Jabon FROM level_readings WHERE Id = ?"
+	query := `
+		SELECT ln.Id, ln.Fecha, ln.Id_Jabon, j.Nombre AS Jabon_Nombre, ln.Nivel_Jabon, nj.Descripcion AS Nivel_Texto
+		FROM Lectura_Nivel ln
+		JOIN Jabon j ON ln.Id_Jabon = j.Id
+		JOIN Nivel_Jabon nj ON ln.Nivel_Jabon = nj.Id
+		WHERE ln.Id = ?
+	`
 	row := repo.db.QueryRow(query, id)
 
 	var levelReading entities.Level_Reading
-	if err := row.Scan(&levelReading.Id, &levelReading.Fecha, &levelReading.Id_Jabon, &levelReading.Nivel_Jabon); err != nil {
+	var fechaString string // Temporal para almacenar la fecha como string
+
+	if err := row.Scan(&levelReading.Id, &fechaString, &levelReading.Id_Jabon, &levelReading.Jabon_Nombre, &levelReading.Nivel_Jabon, &levelReading.Nivel_Texto); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err
 	}
+
+	fecha, err := time.Parse("2006-01-02 15:04:05", fechaString)
+	if err != nil {
+		return nil, fmt.Errorf("error al parsear la fecha: %w", err)
+	}
+	levelReading.Fecha = fecha
+
 	return &levelReading, nil
 }
 
 func (repo *levelReadingRepoMySQL) GetAll() ([]entities.Level_Reading, error) {
-	query := "SELECT Id, Fecha, Id_Jabon, Nivel_Jabon FROM level_readings"
+	query := `
+		SELECT ln.Id, ln.Fecha, ln.Id_Jabon, j.Nombre AS Jabon_Nombre, ln.Nivel_Jabon, nj.Descripcion AS Nivel_Texto
+		FROM Lectura_Nivel ln
+		JOIN Jabon j ON ln.Id_Jabon = j.Id
+		JOIN Nivel_Jabon nj ON ln.Nivel_Jabon = nj.Id
+	`
 	rows, err := repo.db.Query(query)
 	if err != nil {
 		return nil, err
@@ -49,9 +71,18 @@ func (repo *levelReadingRepoMySQL) GetAll() ([]entities.Level_Reading, error) {
 	var levelReadings []entities.Level_Reading
 	for rows.Next() {
 		var levelReading entities.Level_Reading
-		if err := rows.Scan(&levelReading.Id, &levelReading.Fecha, &levelReading.Id_Jabon, &levelReading.Nivel_Jabon); err != nil {
+		var fechaString string // Temporal para almacenar la fecha como string
+
+		if err := rows.Scan(&levelReading.Id, &fechaString, &levelReading.Id_Jabon, &levelReading.Jabon_Nombre, &levelReading.Nivel_Jabon, &levelReading.Nivel_Texto); err != nil {
 			return nil, err
 		}
+
+		fecha, err := time.Parse("2006-01-02 15:04:05", fechaString)
+		if err != nil {
+			return nil, fmt.Errorf("error al parsear la fecha: %w", err)
+		}
+		levelReading.Fecha = fecha
+
 		levelReadings = append(levelReadings, levelReading)
 	}
 
