@@ -15,9 +15,13 @@ import (
 	app_levels "github.com/JosephAntony37900/API-1-Multi/Level_reading/application"
 	control_levels "github.com/JosephAntony37900/API-1-Multi/Level_reading/infrastructure/controllers"
 	routes_levels "github.com/JosephAntony37900/API-1-Multi/Level_reading/infrastructure/routes"
+	rabbitmq "github.com/JosephAntony37900/API-1-Multi/Level_reading/infrastructure/rabbitmq"
 	"github.com/JosephAntony37900/API-1-Multi/helpers"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/streadway/amqp"
+	"os"
+	"fmt"
 )
 
 func main() {
@@ -26,12 +30,35 @@ func main() {
 		log.Fatalf("Error cargando el archivo .env: %v", err)
 	}
 
-	// Inicializar la conexión a la base de datos
+	// Construir URI de RabbitMQ desde las variables de entorno
+	rabbitmqUser := os.Getenv("RABBITMQ_USER")
+	rabbitmqPassword := os.Getenv("RABBITMQ_PASSWORD")
+	rabbitmqHost := os.Getenv("RABBITMQ_HOST")
+	rabbitmqPort := os.Getenv("RABBITMQ_PORT")
+
+	rabbitmqURI := fmt.Sprintf("amqp://%s:%s@%s:%s/", rabbitmqUser, rabbitmqPassword, rabbitmqHost, rabbitmqPort)
+
+	// Inicializar conexión a la base de datos
 	db, err := helpers.NewMySQLConnection()
 	if err != nil {
 		log.Fatalf("Error inicializando la conexión a MySQL: %v", err)
 	}
 	defer db.Close()
+
+	// Inicializar conexión a RabbitMQ
+	if err := helpers.InitRabbitMQ(rabbitmqURI); err != nil {
+		log.Fatalf("Error inicializando RabbitMQ: %v", err)
+	}
+	defer helpers.CloseRabbitMQ()
+
+	// Iniciar consumo de mensajes
+	err = rabbitmq.ConfigureAndConsume("nivel.lectura", "sensor.nivel", "amp.topic", func(msg amqp.Delivery) {
+		log.Printf("Processing message: %s", msg.Body)
+		// Aquí puedes implementar la lógica para manejar el mensaje recibido
+	})
+	if err != nil {
+		log.Fatalf("Error al consumir mensajes: %v", err)
+	}
 
 	// repositorios
 	soapRepo := repo_soap.NewSoapRepoMySQL(db)
