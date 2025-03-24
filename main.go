@@ -2,6 +2,8 @@ package main
 
 import (
 	"log"
+	"fmt"
+	"os"
 
 	app_soap "github.com/JosephAntony37900/API-1-Multi/Soaps/application"
 	control_soap "github.com/JosephAntony37900/API-1-Multi/Soaps/infrastructure/controllers"
@@ -19,18 +21,13 @@ import (
 	"github.com/JosephAntony37900/API-1-Multi/helpers"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/streadway/amqp"
-	"os"
-	"fmt"
 )
 
 func main() {
-	// Cargar variables de entorno desde el archivo .env
 	if err := godotenv.Load(); err != nil {
 		log.Fatalf("Error cargando el archivo .env: %v", err)
 	}
 
-	// Construir URI de RabbitMQ desde las variables de entorno
 	rabbitmqUser := os.Getenv("RABBITMQ_USER")
 	rabbitmqPassword := os.Getenv("RABBITMQ_PASSWORD")
 	rabbitmqHost := os.Getenv("RABBITMQ_HOST")
@@ -51,66 +48,58 @@ func main() {
 	}
 	defer helpers.CloseRabbitMQ()
 
-	// Iniciar consumo de mensajes
-	err = rabbitmq.ConfigureAndConsume("nivel.lectura", "sensor.nivel", "amp.topic", func(msg amqp.Delivery) {
-		log.Printf("Processing message: %s", msg.Body)
-		// Aquí puedes implementar la lógica para manejar el mensaje recibido
-	})
-	if err != nil {
-		log.Fatalf("Error al consumir mensajes: %v", err)
-	}
-
-	// repositorios
+	// Repositorios
 	soapRepo := repo_soap.NewSoapRepoMySQL(db)
 	userRepo := repo_users.NewCreateUserRepoMySQL(db)
 	levelRepo := repo_levels.NewLevelReadingRepoMySQL(db)
 
+	// Casos de uso de Level_reading
+	createLevelUseCase := app_levels.NewCreateLevelReading(levelRepo)
+	levelMessageService := app_levels.NewLevelReadingMessageService(levelRepo, createLevelUseCase)
 
-	// casos de uso de soap
+	// Iniciar consumo de mensajes desde RabbitMQ
+	go func() {
+		err = rabbitmq.StartLevelReadingConsumer(levelMessageService, "nivel.lectura", "sensor.nivel", "amp.topic")
+		if err != nil {
+			log.Fatalf("Error al consumir mensajes: %v", err)
+		}
+	}()
+
+	// Casos de uso de soap
 	createSoapUseCase := app_soap.NewCreateSoap(soapRepo)
 	getAllSoapsUseCase := app_soap.NewGetAllSoaps(soapRepo)
 	getByIdSoapUseCase := app_soap.NewGetByIdSoap(soapRepo)
 	updateSoapUseCase := app_soap.NewUpdateSoaps(soapRepo)
 	deleteSoapUseCase := app_soap.NewDeleteSoap(soapRepo)
 
-	// casos de uso de users
+	// Casos de uso de users
 	createUsersUseCase := app_users.NewCreateUser(userRepo)
 	getAllUsersUseCase := app_users.NewGetUsers(userRepo)
 	deleteUsersUseCase := app_users.NewDeleteUser(userRepo)
 	loginUserUseCase := app_users.NewLoginUser(userRepo)
 	updateUsersUseCase := app_users.NewUpdateUser(userRepo)
 
-	// casos de uso de Level_reading
-	createLevelUseCase := app_levels.NewCreateLevelReading(levelRepo)
-	getAllLevelsUseCase := app_levels.NewGetLevelReading(levelRepo)
-	getByIdLevelUseCase := app_levels.NewGetByIdLevelReading(levelRepo)
-	
-	// Crontoladores de soap
+	// Controladores de soap
 	createSoapController := control_soap.NewCreateSoapController(createSoapUseCase)
 	getAllSoapsController := control_soap.NewGetAllSoapsController(getAllSoapsUseCase)
 	getByIdSoapController := control_soap.NewGetByIdSoapController(getByIdSoapUseCase)
 	updateSoapController := control_soap.NewUpdateSoapController(updateSoapUseCase)
 	deleteSoapController := control_soap.NewDeleteSoapController(deleteSoapUseCase)
 
-	// controladores de users
+	// Controladores de users
 	createUserController := control_users.NewCreateUserController(createUsersUseCase)
 	getAllUsersController := control_users.NewUsersController(getAllUsersUseCase)
 	deleteUsersController := control_users.NewDeleteUserController(deleteUsersUseCase)
 	loginUserController := control_users.NewLoginUserController(loginUserUseCase)
 	updateUsersController := control_users.NewUpdateUserController(updateUsersUseCase)
 
-	// Controladores de Level_reading
-	createLevelController := control_levels.NewCreateLevelReadingController(createLevelUseCase)
-	getAllLevelsController := control_levels.NewGetLevelReadingsController(getAllLevelsUseCase)
-	getByIdLevelController := control_levels.NewGetLevelReadingByIdController(getByIdLevelUseCase)
-	
 	// Configurar el enrutador
 	engine := gin.Default()
 
-	//Agregar el fucking CORS
+	// Agregar el CORS
 	engine.Use(helpers.SetupCORS())
 
-	// Configurar las rutas de soap
+	// Configurar rutas de soap
 	routes_soap.SetupRoutes(
 		engine,
 		createSoapController,
@@ -122,16 +111,14 @@ func main() {
 
 	routes_users.SetupUserRoutes(engine, createUserController, loginUserController, getAllUsersController, deleteUsersController, updateUsersController)
 
-    // Configurar las rutas de Level_reading
+	// Configurar rutas de Level_reading
 	routes_levels.SetupLevelReadingRoutes(
 		engine,
-		createLevelController,
-		getAllLevelsController,
-		getByIdLevelController,
-		
+		control_levels.NewCreateLevelReadingController(createLevelUseCase),
+		control_levels.NewGetLevelReadingsController(app_levels.NewGetLevelReading(levelRepo)),
+		control_levels.NewGetLevelReadingByIdController(app_levels.NewGetByIdLevelReading(levelRepo)),
 	)
 
 	// Iniciar el servidor
 	engine.Run(":8000")
-
 }
