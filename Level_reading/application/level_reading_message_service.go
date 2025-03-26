@@ -90,8 +90,8 @@ func (s *LevelReadingMessageService) PublishAlertIfNecessary(nivelEstado int, id
 		return nil
 	}
 
-	// Crear el mensaje en el formato esperado
-	message := fmt.Sprintf("Estado: %d, IdLectura: %d", nivelEstado, idLectura)
+	// Crear el mensaje con estado fijo como "Pendiente"
+	message := fmt.Sprintf("Estado: Pendiente, IdLectura: %d", idLectura)
 
 	err := s.publisher.Publish(message, "sensor.alerta")
 	if err != nil {
