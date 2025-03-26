@@ -7,5 +7,6 @@ type Level_ReadingRepository interface {
 	FindById(id int) (*entities.Level_Reading, error)
 	GetAll() ([]entities.Level_Reading, error)
 	GetLast() (*entities.Level_Reading, error)
+	SaveWithReturnId(level_Reading entities.Level_Reading) (int, error)
 	
 }

@@ -121,3 +121,21 @@ func (repo *levelReadingRepoMySQL) GetLast() (*entities.Level_Reading, error) {
 
 	return &levelReading, nil
 }
+
+func (repo *levelReadingRepoMySQL) SaveWithReturnId(levelReading entities.Level_Reading) (int, error) {
+	query := `
+		INSERT INTO Lectura_Nivel (Fecha, Id_Jabon, Nivel_Jabon)
+		VALUES (?, ?, ?)
+	`
+	result, err := repo.db.Exec(query, levelReading.Fecha, levelReading.Id_Jabon, levelReading.Nivel_Jabon)
+	if err != nil {
+		return 0, fmt.Errorf("error guardando nivel de lectura: %w", err)
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return 0, fmt.Errorf("error obteniendo el ID del nivel de lectura: %w", err)
+	}
+
+	return int(id), nil
+}
