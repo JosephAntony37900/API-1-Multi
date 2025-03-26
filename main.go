@@ -35,27 +35,26 @@ func main() {
 
 	rabbitmqURI := fmt.Sprintf("amqp://%s:%s@%s:%s/", rabbitmqUser, rabbitmqPassword, rabbitmqHost, rabbitmqPort)
 
-	// Inicializar conexión a la base de datos
 	db, err := helpers.NewMySQLConnection()
 	if err != nil {
 		log.Fatalf("Error inicializando la conexión a MySQL: %v", err)
 	}
 	defer db.Close()
 
-	// Inicializar conexión a RabbitMQ
 	if err := helpers.InitRabbitMQ(rabbitmqURI); err != nil {
 		log.Fatalf("Error inicializando RabbitMQ: %v", err)
 	}
 	defer helpers.CloseRabbitMQ()
 
-	// Repositorios
+	// Repos
 	soapRepo := repo_soap.NewSoapRepoMySQL(db)
 	userRepo := repo_users.NewCreateUserRepoMySQL(db)
 	levelRepo := repo_levels.NewLevelReadingRepoMySQL(db)
 
-	// Casos de uso de Level_reading
+	publisher := rabbitmq.NewRabbitMQPublisher("amq.topic") 
+
 	createLevelUseCase := app_levels.NewCreateLevelReading(levelRepo)
-	levelMessageService := app_levels.NewLevelReadingMessageService(levelRepo, createLevelUseCase)
+	levelMessageService := app_levels.NewLevelReadingMessageService(levelRepo, createLevelUseCase, publisher)
 
 	// Iniciar consumo de mensajes desde RabbitMQ
 	go func() {
@@ -96,7 +95,6 @@ func main() {
 	// Configurar el enrutador
 	engine := gin.Default()
 
-	// Agregar el CORS
 	engine.Use(helpers.SetupCORS())
 
 	// Configurar rutas de soap
@@ -119,6 +117,5 @@ func main() {
 		control_levels.NewGetLevelReadingByIdController(app_levels.NewGetByIdLevelReading(levelRepo)),
 	)
 
-	// Iniciar el servidor
 	engine.Run(":8000")
 }

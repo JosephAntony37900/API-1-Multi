@@ -1,4 +1,3 @@
-// Level_reading/infrastructure/rabbitmq/consumer.go
 package rabbitmq
 
 import (
@@ -12,7 +11,6 @@ import (
 	
 )
 
-// ConfigureAndConsume configura la cola y comienza a consumir mensajes.
 func ConfigureAndConsume(queueName, routingKey, exchangeName string, handleMessage func(msg amqp.Delivery)) error {
     channel := helpers.GetRabbitMQChannel()
     if channel == nil {
@@ -56,7 +54,6 @@ func ConfigureAndConsume(queueName, routingKey, exchangeName string, handleMessa
         return logError("Failed to bind queue: %v", err)
     }
 
-    // Configurar el consumo
     messages, err := channel.Consume(
         queue.Name, // nombre de la cola
         "",         // consumer
@@ -99,8 +96,8 @@ func StartLevelReadingConsumer(service *application.LevelReadingMessageService, 
 			return
 		}
 
-		// Suponiendo un ID de jabón fijo (o cambia según tus requisitos)
-		idJabon := 1 // Cambia este valor si el ID del jabón se obtiene dinámicamente
+		// Suponiendo un ID de jabón fijo 
+		idJabon := 1 
 
 		// Procesar el mensaje con el servicio de negocio
 		err = service.ProcessMessage(level, idJabon)
