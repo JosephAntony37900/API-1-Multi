@@ -49,3 +49,20 @@ func (clr *CreateLevelReading) Run(Fecha int64, Id_Jabon int, Nivel float64) err
 
 	return nil
 }
+
+func (clr *CreateLevelReading) RunWithReturnId(Fecha int64, Id_Jabon int, Nivel float64) (int, error) {
+	fecha := time.Unix(Fecha, 0)
+
+	levelReading := entities.Level_Reading{
+		Fecha:       fecha,
+		Id_Jabon:    Id_Jabon,
+		Nivel_Jabon: int(Nivel),
+	}
+
+	id, err := clr.repo.SaveWithReturnId(levelReading)
+	if err != nil {
+		return 0, fmt.Errorf("error guardando el nivel de lectura: %w", err)
+	}
+
+	return id, nil
+}

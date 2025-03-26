@@ -27,11 +27,13 @@ func NewLevelReadingMessageService(repo repository.Level_ReadingRepository, crea
 }
 
 func (s *LevelReadingMessageService) ProcessMessage(level float64, idJabon int) error {
+	// Obtener el último nivel de lectura
 	lastLevel, err := s.repo.GetLast()
 	if err != nil {
 		return fmt.Errorf("error al obtener el último nivel de lectura: %w", err)
 	}
 
+	// Determinar el estado del nivel del mensaje recibido
 	var nivelEstado int
 	switch {
 	case level >= 85.00 && level <= 100.00:
@@ -49,20 +51,27 @@ func (s *LevelReadingMessageService) ProcessMessage(level float64, idJabon int) 
 		return nil // Ignorar niveles inválidos
 	}
 
-	// Publicar alerta si es necesario
-	err = s.PublishAlertIfNecessary(nivelEstado)
-	if err != nil {
-		log.Printf("Error al intentar publicar alerta: %v", err)
-	}
-
 	// Si no hay un nivel previo o el estado es diferente, creamos un nuevo nivel
+	var newLevelId int
 	if lastLevel == nil || lastLevel.Nivel_Jabon != nivelEstado {
 		log.Println("Creando un nuevo nivel de lectura...")
-		err = s.createUseCase.Run(time.Now().Unix(), idJabon, level)
+		newLevelId, err = s.createUseCase.RunWithReturnId(time.Now().Unix(), idJabon, float64(nivelEstado))
 		if err != nil {
 			return fmt.Errorf("error al crear un nuevo nivel de lectura: %w", err)
 		}
-		log.Println("Nuevo nivel de lectura creado")
+	
+		// Confirmar que el ID existe en la base de datos antes de continuar
+		createdLevel, err := s.repo.FindById(newLevelId)
+		if err != nil || createdLevel == nil {
+			return fmt.Errorf("error confirmando el nivel de lectura creado con ID: %d", newLevelId)
+		}
+		log.Printf("Nivel de lectura creado y confirmado con ID: %d", newLevelId)
+	
+		// Publicar alerta con el ID confirmado
+		err = s.PublishAlertIfNecessary(nivelEstado, newLevelId)
+		if err != nil {
+			log.Printf("Error al intentar publicar alerta: %v", err)
+		}
 	} else {
 		log.Println("El nivel es igual al último, ignorando el mensaje")
 	}
@@ -70,32 +79,26 @@ func (s *LevelReadingMessageService) ProcessMessage(level float64, idJabon int) 
 	return nil
 }
 
-func (s *LevelReadingMessageService) PublishAlertIfNecessary(nivelEstado int) error {
-	// Publicar un mensaje solo si el estado es bajo (4) o vacío (5)
+func (s *LevelReadingMessageService) PublishAlertIfNecessary(nivelEstado int, idLectura int) error {
 	if nivelEstado != 4 && nivelEstado != 5 {
 		s.lastAlertSent = 0 // Resetear el estado de alerta cuando cambia
 		return nil
 	}
 
-	// Evitar duplicados: solo enviar si el estado es diferente al último enviado
 	if s.lastAlertSent == nivelEstado {
 		log.Println("Alerta ya enviada previamente, no se publicará nuevamente.")
 		return nil
 	}
 
-	// Preparar mensaje de alerta
-	estadoTexto := map[int]string{
-		4: "Bajo",
-		5: "Vacío",
-	}[nivelEstado]
+	// Crear el mensaje en el formato esperado
+	message := fmt.Sprintf("Estado: %d, IdLectura: %d", nivelEstado, idLectura)
 
-	message := fmt.Sprintf("Alerta: el nivel está %s", estadoTexto)
 	err := s.publisher.Publish(message, "sensor.alerta")
 	if err != nil {
 		return fmt.Errorf("error al publicar la alerta: %w", err)
 	}
 
 	log.Printf("Mensaje de alerta publicado: %s", message)
-	s.lastAlertSent = nivelEstado // Actualizar el estado enviado
+	s.lastAlertSent = nivelEstado
 	return nil
 }
