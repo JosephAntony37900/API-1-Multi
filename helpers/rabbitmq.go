@@ -1,4 +1,3 @@
-// helpers/rabbitmq.go
 package helpers
 
 import (
@@ -9,7 +8,6 @@ import (
 var rabbitConn *amqp.Connection
 var rabbitChannel *amqp.Channel
 
-// InitRabbitMQ inicializa la conexión y crea el canal con RabbitMQ.
 func InitRabbitMQ(uri string) error {
     conn, err := amqp.Dial(uri)
     if err != nil {
@@ -33,7 +31,6 @@ func GetRabbitMQChannel() *amqp.Channel {
     return rabbitChannel
 }
 
-// CloseRabbitMQ cierra la conexión y el canal de RabbitMQ.
 func CloseRabbitMQ() {
     if rabbitChannel != nil {
         rabbitChannel.Close()
