@@ -15,13 +15,14 @@ func NewCreateSoap(repo repository.SoapsRepository) *CreateSoap{
 	return &CreateSoap{repo: repo}
 }
 
-func(cs *CreateSoap) Run(Nombre string, Marca string, Tipo string, Precio float64, Densidad float64) error {
+func(cs *CreateSoap) Run(Nombre string, Marca string, Tipo string, Precio float64, Densidad float64, Id_Usuario_Admin  int) error {
 	soap := entities.Soaps{
 		Nombre: Nombre,
 		Marca: Marca,
 		Tipo: Tipo,
 		Precio: Precio,
 		Densidad: Densidad,
+		Id_Usuario_Admin: Id_Usuario_Admin,
 	}
 
 	if err := cs.repo.Save(soap); err != nil {

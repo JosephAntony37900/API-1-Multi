@@ -7,4 +7,5 @@ type Soaps struct {
 	Tipo string
 	Precio float64
 	Densidad float64
+	Id_Usuario_Admin int
 }
