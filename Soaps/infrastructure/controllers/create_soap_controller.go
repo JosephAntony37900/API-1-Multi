@@ -25,6 +25,7 @@ func (c *CreateSoapController) Handle(ctx *gin.Context) {
 		Tipo     string  `json:"tipo"`
 		Precio   float64 `json:"precio"`
 		Densidad float64 `json:"densidad"`
+		Id_Usuario_Admin int `json:"id_usuario_admin "`
 	}
 
 	// Decodificar el cuerpo de la solicitud
@@ -38,7 +39,7 @@ func (c *CreateSoapController) Handle(ctx *gin.Context) {
 		request.Nombre, request.Marca, request.Tipo, request.Precio, request.Densidad)
 
 	// Ejecutar el caso de uso para crear el jabón
-	if err := c.createSoap.Run(request.Nombre, request.Marca, request.Tipo, request.Precio, request.Densidad); err != nil {
+	if err := c.createSoap.Run(request.Nombre, request.Marca, request.Tipo, request.Precio, request.Densidad, request.Id_Usuario_Admin); err != nil {
 		log.Printf("Error creando el jabón: %v", err)
 		ctx.JSON(500, gin.H{"error": err.Error()})
 		return

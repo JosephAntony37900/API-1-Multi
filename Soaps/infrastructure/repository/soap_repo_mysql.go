@@ -19,11 +19,11 @@ func NewSoapRepoMySQL(db *sql.DB) *SoapRepoMySQL {
 
 func (r *SoapRepoMySQL) Save(soap entities.Soaps) error {
 	query := `
-		INSERT INTO Jabon (Nombre, Marca, Tipo, Precio, Densidad)
-		VALUES (?, ?, ?, ?, ?)
+		INSERT INTO Jabon (Nombre, Marca, Tipo, Precio, Densidad, Id_Usuario_Admin )
+		VALUES (?, ?, ?, ?, ?, ?)
 	`
 
-	result, err := r.db.Exec(query, soap.Nombre, soap.Marca, soap.Tipo, soap.Precio, soap.Densidad)
+	result, err := r.db.Exec(query, soap.Nombre, soap.Marca, soap.Tipo, soap.Precio, soap.Densidad, soap.Id_Usuario_Admin)
 	if err != nil {
 		return fmt.Errorf("error al guardar el jabón en la BD: %w", err)
 	}
@@ -41,14 +41,14 @@ func (r *SoapRepoMySQL) Save(soap entities.Soaps) error {
 
 func (r *SoapRepoMySQL) FindById(id int) (*entities.Soaps, error) {
 	query := `
-		SELECT Id, Nombre, Marca, Tipo, Precio, Densidad
+		SELECT Id, Nombre, Marca, Tipo, Precio, Densidad, Id_Usuario_Admin 
 		FROM Jabon
 		WHERE Id = ?
 	`
 
 	row := r.db.QueryRow(query, id)
 	var soap entities.Soaps
-	if err := row.Scan(&soap.Id, &soap.Nombre, &soap.Marca, &soap.Tipo, &soap.Precio, &soap.Densidad); err != nil {
+	if err := row.Scan(&soap.Id, &soap.Nombre, &soap.Marca, &soap.Tipo, &soap.Precio, &soap.Densidad, &soap.Id_Usuario_Admin); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("jabón no encontrado con ID %d", id)
 		}

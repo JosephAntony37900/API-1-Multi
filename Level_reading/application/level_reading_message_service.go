@@ -27,7 +27,6 @@ func NewLevelReadingMessageService(repo repository.Level_ReadingRepository, crea
 }
 
 func (s *LevelReadingMessageService) ProcessMessage(level float64, idJabon int) error {
-	// Obtener el último nivel de lectura
 	lastLevel, err := s.repo.GetLast()
 	if err != nil {
 		return fmt.Errorf("error al obtener el último nivel de lectura: %w", err)
@@ -60,14 +59,12 @@ func (s *LevelReadingMessageService) ProcessMessage(level float64, idJabon int) 
 			return fmt.Errorf("error al crear un nuevo nivel de lectura: %w", err)
 		}
 	
-		// Confirmar que el ID existe en la base de datos antes de continuar
 		createdLevel, err := s.repo.FindById(newLevelId)
 		if err != nil || createdLevel == nil {
 			return fmt.Errorf("error confirmando el nivel de lectura creado con ID: %d", newLevelId)
 		}
 		log.Printf("Nivel de lectura creado y confirmado con ID: %d", newLevelId)
 	
-		// Publicar alerta con el ID confirmado
 		err = s.PublishAlertIfNecessary(nivelEstado, newLevelId)
 		if err != nil {
 			log.Printf("Error al intentar publicar alerta: %v", err)
@@ -90,7 +87,6 @@ func (s *LevelReadingMessageService) PublishAlertIfNecessary(nivelEstado int, id
 		return nil
 	}
 
-	// Crear el mensaje con estado fijo como "Pendiente"
 	message := fmt.Sprintf("Estado: Pendiente, IdLectura: %d", idLectura)
 
 	err := s.publisher.Publish(message, "sensor.alerta")
