@@ -19,7 +19,6 @@ func NewGetByIdSoapController(getByIdSoap *application.GetByIdSoap) *GetByIdSoap
 func (c *GetByIdSoapController) Handle(ctx *gin.Context) {
 	log.Println("Recibe la petición para obtener un jabón por ID")
 
-	// Obtener el ID del jabón desde la URL
 	idStr := ctx.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -38,7 +37,6 @@ func (c *GetByIdSoapController) Handle(ctx *gin.Context) {
 		return
 	}
 
-	// Respuesta con el jabón encontrado
 	log.Println("Jabón obtenido exitosamente")
 	ctx.JSON(200, soap)
 }

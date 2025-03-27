@@ -134,3 +134,33 @@ func (r *SoapRepoMySQL) Delete(id int) error {
 	log.Printf("✅ Jabón eliminado correctamente: %d", id)
 	return nil
 }
+
+func (r *SoapRepoMySQL) FindByAdminId(adminId int) ([]entities.Soaps, error) {
+	query := `
+		SELECT Id, Nombre, Marca, Tipo, Precio, Densidad, Id_Usuario_Admin
+		FROM Jabon
+		WHERE Id_Usuario_Admin = ?
+	`
+
+	rows, err := r.db.Query(query, adminId)
+	if err != nil {
+		return nil, fmt.Errorf("error al obtener los jabones del administrador con ID %d: %w", adminId, err)
+	}
+	defer rows.Close()
+
+	var soaps []entities.Soaps
+	for rows.Next() {
+		var soap entities.Soaps
+		if err := rows.Scan(&soap.Id, &soap.Nombre, &soap.Marca, &soap.Tipo, &soap.Precio, &soap.Densidad, &soap.Id_Usuario_Admin); err != nil {
+			return nil, fmt.Errorf("error al escanear los jabones: %w", err)
+		}
+		soaps = append(soaps, soap)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error en la iteración de jabones: %w", err)
+	}
+
+	log.Printf("✅ Jabones obtenidos para el administrador con ID %d: %+v", adminId, soaps)
+	return soaps, nil
+}
