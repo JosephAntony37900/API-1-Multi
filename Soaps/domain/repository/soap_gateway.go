@@ -8,4 +8,5 @@ type SoapsRepository interface {
 	GetAll() ([]entities.Soaps, error)
 	Update(soaps entities.Soaps) error
 	Delete (id int) error
+	FindByAdminId(adminId int) ([]entities.Soaps, error)
 } 

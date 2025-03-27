@@ -70,6 +70,7 @@ func main() {
 	getByIdSoapUseCase := app_soap.NewGetByIdSoap(soapRepo)
 	updateSoapUseCase := app_soap.NewUpdateSoaps(soapRepo)
 	deleteSoapUseCase := app_soap.NewDeleteSoap(soapRepo)
+	getByAdminUseCase := app_soap.NewGetSoapsByAdmin(soapRepo)
 
 	// Casos de uso de users
 	createUsersUseCase := app_users.NewCreateUser(userRepo)
@@ -84,6 +85,7 @@ func main() {
 	getByIdSoapController := control_soap.NewGetByIdSoapController(getByIdSoapUseCase)
 	updateSoapController := control_soap.NewUpdateSoapController(updateSoapUseCase)
 	deleteSoapController := control_soap.NewDeleteSoapController(deleteSoapUseCase)
+	getByAdminController := control_soap.NewGetSoapsByAdminController(getByAdminUseCase)
 
 	// Controladores de users
 	createUserController := control_users.NewCreateUserController(createUsersUseCase)
@@ -105,6 +107,7 @@ func main() {
 		getByIdSoapController,
 		updateSoapController,
 		deleteSoapController,
+		getByAdminController,
 	)
 
 	routes_users.SetupUserRoutes(engine, createUserController, loginUserController, getAllUsersController, deleteUsersController, updateUsersController)

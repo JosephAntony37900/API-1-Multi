@@ -12,6 +12,7 @@ func SetupRoutes(
 	getByIdSoapController *controllers.GetByIdSoapController,
 	updateSoapController *controllers.UpdateSoapController,
 	deleteSoapController *controllers.DeleteSoapController,
+	getSoapsByAdminController *controllers.GetSoapsByAdminController,
 ) {
 	// Ruta para crear un jabón
 	engine.POST("/soaps", createSoapController.Handle)
@@ -27,4 +28,8 @@ func SetupRoutes(
 
 	// Ruta para eliminar un jabón por ID
 	engine.DELETE("/soaps/:id", deleteSoapController.Handle)
+
+	// Ruta para obtener jabones de un administrador
+	engine.GET("/soaps/admin/:adminId", getSoapsByAdminController.Handle)
+
 }
