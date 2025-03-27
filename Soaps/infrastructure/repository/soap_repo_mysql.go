@@ -19,7 +19,7 @@ func NewSoapRepoMySQL(db *sql.DB) *SoapRepoMySQL {
 
 func (r *SoapRepoMySQL) Save(soap entities.Soaps) error {
 	query := `
-		INSERT INTO Soaps (Nombre, Marca, Tipo, Precio, Densidad)
+		INSERT INTO Jabon (Nombre, Marca, Tipo, Precio, Densidad)
 		VALUES (?, ?, ?, ?, ?)
 	`
 
@@ -42,7 +42,7 @@ func (r *SoapRepoMySQL) Save(soap entities.Soaps) error {
 func (r *SoapRepoMySQL) FindById(id int) (*entities.Soaps, error) {
 	query := `
 		SELECT Id, Nombre, Marca, Tipo, Precio, Densidad
-		FROM Soaps
+		FROM Jabon
 		WHERE Id = ?
 	`
 
@@ -61,7 +61,7 @@ func (r *SoapRepoMySQL) FindById(id int) (*entities.Soaps, error) {
 func (r *SoapRepoMySQL) GetAll() ([]entities.Soaps, error) {
 	query := `
 		SELECT Id, Nombre, Marca, Tipo, Precio, Densidad
-		FROM Soaps
+		FROM Jabon
 	`
 
 	rows, err := r.db.Query(query)
@@ -88,7 +88,7 @@ func (r *SoapRepoMySQL) GetAll() ([]entities.Soaps, error) {
 
 func (r *SoapRepoMySQL) Update(soap entities.Soaps) error {
 	query := `
-		UPDATE Soaps
+		UPDATE Jabon
 		SET Nombre = ?, Marca = ?, Tipo = ?, Precio = ?, Densidad = ?
 		WHERE Id = ?
 	`
@@ -113,7 +113,7 @@ func (r *SoapRepoMySQL) Update(soap entities.Soaps) error {
 
 func (r *SoapRepoMySQL) Delete(id int) error {
 	query := `
-		DELETE FROM Soaps
+		DELETE FROM Jabon
 		WHERE Id = ?
 	`
 
