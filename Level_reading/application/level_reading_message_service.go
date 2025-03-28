@@ -8,6 +8,7 @@ import (
 	_ "github.com/JosephAntony37900/API-1-Multi/Level_reading/domain/entities"
 	messagingmq "github.com/JosephAntony37900/API-1-Multi/Level_reading/domain/messaging_MQ"
 	"github.com/JosephAntony37900/API-1-Multi/Level_reading/domain/repository"
+	"github.com/JosephAntony37900/API-1-Multi/helpers"
 )
 
 type LevelReadingMessageService struct {
@@ -65,7 +66,7 @@ func (s *LevelReadingMessageService) ProcessMessage(level float64, idJabon int) 
 		}
 		log.Printf("Nivel de lectura creado y confirmado con ID: %d", newLevelId)
 	
-		err = s.PublishAlertIfNecessary(nivelEstado, newLevelId)
+		err = s.PublishAlertIfNecessary(nivelEstado, newLevelId, idJabon)
 		if err != nil {
 			log.Printf("Error al intentar publicar alerta: %v", err)
 		}
@@ -76,20 +77,36 @@ func (s *LevelReadingMessageService) ProcessMessage(level float64, idJabon int) 
 	return nil
 }
 
-func (s *LevelReadingMessageService) PublishAlertIfNecessary(nivelEstado int, idLectura int) error {
-	if nivelEstado != 4 && nivelEstado != 5 {
+func (s *LevelReadingMessageService) PublishAlertIfNecessary(nivelEstado int, idLectura int, idJabon int) error {
+	if nivelEstado != 4 && nivelEstado != 5 { // Publicar solo si el nivel es "Bajo" o "Vacío"
 		s.lastAlertSent = 0 // Resetear el estado de alerta cuando cambia
 		return nil
 	}
 
-	if s.lastAlertSent == nivelEstado {
+	if s.lastAlertSent == nivelEstado { 
 		log.Println("Alerta ya enviada previamente, no se publicará nuevamente.")
 		return nil
 	}
 
-	message := fmt.Sprintf("Estado: Pendiente, IdLectura: %d", idLectura)
+	// Obtener el Id_UserAdmin a partir del Id_Jabon
+	idUserAdmin, err := s.repo.FindUserAdminByJabon(idJabon)
+	if err != nil {
+		return fmt.Errorf("error obteniendo el usuario administrador del jabón: %w", err)
+	}
 
-	err := s.publisher.Publish(message, "sensor.alerta")
+	jwt, err := helpers.GenerateJWT(idUserAdmin)
+	if err != nil {
+		return fmt.Errorf("error generando el JWT: %w", err)
+	}
+
+	// Construir el mensaje enriquecido con el JWT
+	message := fmt.Sprintf(`{
+		"estado": "Pendiente",
+		"id_lectura": %d,
+		"jwt": "%s"
+	}`, idLectura, jwt)
+
+	err = s.publisher.Publish(message, "sensor.alerta")
 	if err != nil {
 		return fmt.Errorf("error al publicar la alerta: %w", err)
 	}

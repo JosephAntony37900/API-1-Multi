@@ -9,14 +9,14 @@ import (
 )
 
 type RabbitMQPublisher struct {
-	channel *amqp.Channel
+	channel      *amqp.Channel
 	exchangeName string
 }
 
 func NewRabbitMQPublisher(exchangeName string) *RabbitMQPublisher {
 	channel := helpers.GetRabbitMQChannel()
 	return &RabbitMQPublisher{
-		channel: channel,
+		channel:      channel,
 		exchangeName: exchangeName,
 	}
 }
@@ -32,7 +32,7 @@ func (p *RabbitMQPublisher) Publish(message string, routingKey string) error {
 		false,          // mandatory
 		false,          // immediate
 		amqp.Publishing{
-			ContentType: "text/plain",
+			ContentType: "application/json", // Cambiado para enviar JSON
 			Body:        []byte(message),
 		},
 	)
