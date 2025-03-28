@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/JosephAntony37900/API-1-Multi/Soaps/infrastructure/controllers"
+	"github.com/JosephAntony37900/API-1-Multi/helpers"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,22 +15,17 @@ func SetupRoutes(
 	deleteSoapController *controllers.DeleteSoapController,
 	getSoapsByAdminController *controllers.GetSoapsByAdminController,
 ) {
-	// Ruta para crear un jabón
+	// Grupo de rutas públicas ( cambiar despues a protegidas porfa)
 	engine.POST("/soaps", createSoapController.Handle)
-
-	// Ruta para obtener todos los jabones
 	engine.GET("/soaps", getAllSoapsController.Handle)
-
-	// Ruta para obtener un jabón por ID
 	engine.GET("/soaps/:id", getByIdSoapController.Handle)
 
-	// Ruta para actualizar un jabón por ID
-	engine.PUT("/soaps/:id", updateSoapController.Handle)
+	// Grupo de rutas protegidas con JWTMiddleware
+	protectedRoutes := engine.Group("/soaps")
+	protectedRoutes.Use(helpers.JWTMiddleware()) // Aplica el middleware
 
-	// Ruta para eliminar un jabón por ID
-	engine.DELETE("/soaps/:id", deleteSoapController.Handle)
-
-	// Ruta para obtener jabones de un administrador
-	engine.GET("/soaps/admin/:adminId", getSoapsByAdminController.Handle)
-
+	// Rutas protegidas
+	protectedRoutes.PUT("/:id", updateSoapController.Handle)
+	protectedRoutes.DELETE("/:id", deleteSoapController.Handle)
+	protectedRoutes.GET("/admin/:adminId", getSoapsByAdminController.Handle)
 }

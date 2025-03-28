@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -20,31 +19,36 @@ func NewLoginUserController(LoginUser *application.LoginUser) *LoginUserControll
 func (c *LoginUserController) Handle(ctx *gin.Context) {
 	log.Println("Petición de login recibida")
 
+	// Estructura para recibir el JSON de la solicitud
 	var request struct {
 		Email    string `json:"Email"`
 		Password string `json:"Contrasena"`
 	}
 
-	fmt.Println("emailsito: ", request.Email)
-
+	// Validar el cuerpo de la solicitud
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		log.Printf("Error en la petición del body: %v", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Petición del body inválida"})
 		return
 	}
 
-	user, valid, err := c.LoginUser.Run(request.Email, request.Password)
-	fmt.Println("Contra: ", request.Password)
-	if err != nil || !valid {
+	// Ejecutar el caso de uso para autenticar al usuario
+	user, token, err := c.LoginUser.Run(request.Email, request.Password)
+	if err != nil {
 		log.Printf("Error en el login: %v", err)
-		log.Printf(request.Email, request.Password)
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Credenciales incorrectas"})
 		return
 	}
 
+	// Responder con el token y los datos del usuario
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "Login exitoso",
-		"user":    user,
-		"valid":   valid,
+		"token":   token,
+		"user": gin.H{
+			"id":     user.Id,
+			"nombre": user.Nombre,
+			"email":  user.Email,
+			"rol":    user.Id_Rol,
+		},
 	})
 }
