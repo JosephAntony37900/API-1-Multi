@@ -21,6 +21,7 @@ import (
 	"github.com/JosephAntony37900/API-1-Multi/helpers"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	_"github.com/dgrijalva/jwt-go"
 )
 
 func main() {
