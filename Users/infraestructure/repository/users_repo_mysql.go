@@ -73,11 +73,11 @@ func (r *UserRepoMySQL) Delete(id int) error {
 }
 
 func (r *UserRepoMySQL) FindByEmail(email string) (*entities.Users, error) {
-	query := "SELECT Id, Nombre, Email, Contraseña FROM Usuarios WHERE Email = ?"
+	query := "SELECT Id, Nombre, Email, Contraseña, Id_Rol FROM Usuarios WHERE Email = ?"
 	row := r.db.QueryRow(query, email)
 
 	var user entities.Users
-	if err := row.Scan(&user.Id, &user.Nombre, &user.Email, &user.Contraseña); err != nil {
+	if err := row.Scan(&user.Id, &user.Nombre, &user.Email, &user.Contraseña, &user.Id_Rol); err != nil {
 		return nil, fmt.Errorf("error buscando el usuario: %w", err)
 	}
 	return &user, nil
