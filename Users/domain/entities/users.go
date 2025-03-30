@@ -6,4 +6,5 @@ type Users struct {
 	Email string
 	Contraseña string
 	Id_Rol int
+	Codigo_Identificador string
 }

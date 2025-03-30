@@ -22,6 +22,7 @@ func (c *CreateUserController) Handle(ctx *gin.Context) {
 		Nombre     string `json:"Nombre"`
 		Email      string `json:"Email"`
 		Contraseña string `json:"Contrasena"`
+		Codigo_Identificador string `json:"Codigo_Identificador"`
 	}
 
 	if err := ctx.ShouldBindBodyWithJSON(&request); err != nil {
@@ -29,9 +30,9 @@ func (c *CreateUserController) Handle(ctx *gin.Context) {
 		ctx.JSON(400, gin.H{"error": "petición del body invalida"})
 		return
 	}
-	log.Printf("Creando usuario: Nombre=%s, email=%s, contraseña=%s", request.Nombre, request.Email, request.Contraseña)
+	log.Printf("Creando usuario: Nombre=%s, email=%s, contraseña=%s, Codigo identificador=%s", request.Nombre, request.Email, request.Contraseña, request.Codigo_Identificador)
 
-	if err := c.CreateUsers.Run(request.Nombre, request.Email, request.Contraseña); err != nil {
+	if err := c.CreateUsers.Run(request.Nombre, request.Email, request.Contraseña, request.Codigo_Identificador); err != nil {
 		log.Printf("Error creando el usuario: %v", err)
 		ctx.JSON(500, gin.H{"error": err.Error()})
 		return
