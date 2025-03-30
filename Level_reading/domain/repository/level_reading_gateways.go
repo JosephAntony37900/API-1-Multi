@@ -8,5 +8,6 @@ type Level_ReadingRepository interface {
 	GetAll() ([]entities.Level_Reading, error)
 	GetLast() (*entities.Level_Reading, error)
 	SaveWithReturnId(level_Reading entities.Level_Reading) (int, error)
+	FindUserAdminByJabon(idJabon int) (int, error)
 	
 }

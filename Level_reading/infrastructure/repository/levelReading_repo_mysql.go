@@ -139,3 +139,13 @@ func (repo *levelReadingRepoMySQL) SaveWithReturnId(levelReading entities.Level_
 
 	return int(id), nil
 }
+
+func (r *levelReadingRepoMySQL) FindUserAdminByJabon(idJabon int) (int, error) {
+	query := `SELECT Id_Usuario_Admin FROM Jabon WHERE Id = ?`
+	var idUserAdmin int
+	err := r.db.QueryRow(query, idJabon).Scan(&idUserAdmin)
+	if err != nil {
+		return 0, fmt.Errorf("error obteniendo el usuario administrador: %w", err)
+	}
+	return idUserAdmin, nil
+}

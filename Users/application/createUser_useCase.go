@@ -16,13 +16,13 @@ func NewCreateUser(repo repository.UserRepository) *CreateUsers {
 	return &CreateUsers{repo: repo}
 }
 
-func (cu *CreateUsers) Run(nombre string, email string, contraseña string) error {
+func (cu *CreateUsers) Run(nombre string, email string, contraseña string, Codigo_Identificador string) error {
 	hashedPassword, err := helpers.HashPassword(contraseña)
 	if err != nil {
 		return fmt.Errorf("error al encriptar la contraseña: %w", err)
 	}
 
-	user := entities.Users{Nombre: nombre, Email: email, Contraseña: hashedPassword}
+	user := entities.Users{Nombre: nombre, Email: email, Contraseña: hashedPassword, Codigo_Identificador: Codigo_Identificador}
 	fmt.Println("Contraseña original en el UseCase: ", contraseña)
 	fmt.Println("Hash nuevo:", hashedPassword, "Longitud:", len(hashedPassword))
 	if err := cu.repo.Save(user); err != nil {

@@ -16,8 +16,8 @@ func NewCreateUserRepoMySQL(db *sql.DB) *UserRepoMySQL {
 }
 
 func (r *UserRepoMySQL) Save(User entities.Users) error {
-	query := "INSERT INTO Usuarios (Nombre, Email, Contraseña) VALUES (?, ?, ?)"
-	_, err := r.db.Exec(query, User.Nombre, User.Email, User.Contraseña)
+	query := "INSERT INTO Usuarios (Nombre, Email, Contraseña, Codigo_Identificador) VALUES (?, ?, ?, ?)"
+	_, err := r.db.Exec(query, User.Nombre, User.Email, User.Contraseña, User.Codigo_Identificador)
 	if err != nil {
 		return fmt.Errorf("error insertando User: %w", err)
 	}
