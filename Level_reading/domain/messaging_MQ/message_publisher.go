@@ -1,5 +1,5 @@
 package messagingmq
 
 type MessagePublisher interface {
-	Publish(message string, routingKey string) error
+	Publish(estado string, idLectura int, codigoIdentificador string, tipo bool, routingKey string) error
 }

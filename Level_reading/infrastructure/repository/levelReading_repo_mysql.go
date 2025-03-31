@@ -18,12 +18,12 @@ func NewLevelReadingRepoMySQL(db *sql.DB) repository.Level_ReadingRepository {
 }
 
 func (repo *levelReadingRepoMySQL) Save(levelReading entities.Level_Reading) error {
-	query := "INSERT INTO Lectura_Nivel (Fecha, Id_Jabon, Nivel_Jabon, Codigo_Identificador) VALUES (?, ?, ?, ?)"
-	_, err := repo.db.Exec(query, levelReading.Fecha, levelReading.Id_Jabon, levelReading.Nivel_Jabon, levelReading.Codigo_Identificador)
-	if err != nil {
-		return err
-	}
-	return nil
+    query := "INSERT INTO Lectura_Nivel (Fecha, Id_Jabon, Nivel_Jabon, Codigo_Identificador, Tipo) VALUES (?, ?, ?, ?, ?)"
+    _, err := repo.db.Exec(query, levelReading.Fecha, levelReading.Id_Jabon, levelReading.Nivel_Jabon, levelReading.Codigo_Identificador, levelReading.Tipo)
+    if err != nil {
+        return err
+    }
+    return nil
 }
 
 func (repo *levelReadingRepoMySQL) FindById(id int) (*entities.Level_Reading, error) {
@@ -124,10 +124,10 @@ func (repo *levelReadingRepoMySQL) GetLast() (*entities.Level_Reading, error) {
 
 func (repo *levelReadingRepoMySQL) SaveWithReturnId(levelReading entities.Level_Reading) (int, error) {
 	query := `
-		INSERT INTO Lectura_Nivel (Fecha, Id_Jabon, Nivel_Jabon)
+		INSERT INTO Lectura_Nivel (Fecha, Id_Jabon, Nivel_Jabon, Codigo_Identificador, Tipo)
 		VALUES (?, ?, ?)
 	`
-	result, err := repo.db.Exec(query, levelReading.Fecha, levelReading.Id_Jabon, levelReading.Nivel_Jabon)
+	result, err := repo.db.Exec(query, levelReading.Fecha, levelReading.Id_Jabon, levelReading.Nivel_Jabon, levelReading.Codigo_Identificador, levelReading.Tipo)
 	if err != nil {
 		return 0, fmt.Errorf("error guardando nivel de lectura: %w", err)
 	}
