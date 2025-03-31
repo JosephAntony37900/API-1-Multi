@@ -5,11 +5,18 @@ import (
     "github.com/streadway/amqp"
     "log"
 	"fmt"
-	"strconv"
+	_"strconv"
+    "encoding/json"
 
 	"github.com/JosephAntony37900/API-1-Multi/Level_reading/application"
 	
 )
+
+type Message struct {
+    ID    string  `json:"ID"`
+    Nivel float64 `json:"Nivel"`
+    Tipo  bool    `json:"Tipo"`
+}
 
 func ConfigureAndConsume(queueName, routingKey, exchangeName string, handleMessage func(msg amqp.Delivery)) error {
     channel := helpers.GetRabbitMQChannel()
@@ -86,25 +93,29 @@ func logError(format string, args ...interface{}) error {
 }
 
 func StartLevelReadingConsumer(service *application.LevelReadingMessageService, queueName, routingKey, exchangeName string) error {
-	handleMessage := func(msg amqp.Delivery) {
-		log.Printf("Received a message: %s", msg.Body)
+    handleMessage := func(msg amqp.Delivery) {
+        log.Printf("Received a message: %s", msg.Body)
 
-		// Parsear el mensaje recibido (nivel de lectura)
-		level, err := strconv.ParseFloat(string(msg.Body), 64)
-		if err != nil {
-			log.Printf("Error al parsear el nivel de lectura: %v", err)
-			return
-		}
+        // Deserializar el mensaje JSON
+        var message Message
+        err := json.Unmarshal(msg.Body, &message)
+        if err != nil {
+            log.Printf("Error al deserializar el mensaje: %v", err)
+            return
+        }
 
-		// Suponiendo un ID de jabón fijo 
-		idJabon := 1 
+        // Mostrar los datos deserializados
+        log.Printf("Código identificador: %s", message.ID)
+        log.Printf("Nivel de lectura: %.2f%%", message.Nivel)
+        log.Printf("Tipo: %t (true = líquido, false = polvo)", message.Tipo)
 
-		// Procesar el mensaje con el servicio de negocio
-		err = service.ProcessMessage(level, idJabon)
-		if err != nil {
-			log.Printf("Error al procesar el mensaje: %v", err)
-		}
-	}
+        // Procesar el nivel, el ID del jabón, el código identificador y el tipo
+        idJabon := 1 // Este ID puede variar según tu implementación
+        err = service.ProcessMessage(message.Nivel, idJabon, message.ID, message.Tipo)
+        if err != nil {
+            log.Printf("Error al procesar el mensaje: %v", err)
+        }
+    }
 
-	return ConfigureAndConsume(queueName, routingKey, exchangeName, handleMessage)
+    return ConfigureAndConsume(queueName, routingKey, exchangeName, handleMessage)
 }

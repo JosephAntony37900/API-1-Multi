@@ -2,8 +2,8 @@ package main
 
 import (
 	"log"
-	//"fmt"
-	//"os"
+	"fmt"
+	"os"
 
 	app_soap "github.com/JosephAntony37900/API-1-Multi/Soaps/application"
 	control_soap "github.com/JosephAntony37900/API-1-Multi/Soaps/infrastructure/controllers"
@@ -13,11 +13,11 @@ import (
 	control_users "github.com/JosephAntony37900/API-1-Multi/Users/infraestructure/controllers"
 	repo_users "github.com/JosephAntony37900/API-1-Multi/Users/infraestructure/repository"
 	routes_users "github.com/JosephAntony37900/API-1-Multi/Users/infraestructure/routes"
-	//repo_levels "github.com/JosephAntony37900/API-1-Multi/Level_reading/infrastructure/repository"
-	//app_levels "github.com/JosephAntony37900/API-1-Multi/Level_reading/application"
-	//control_levels "github.com/JosephAntony37900/API-1-Multi/Level_reading/infrastructure/controllers"
-	//routes_levels "github.com/JosephAntony37900/API-1-Multi/Level_reading/infrastructure/routes"
-	//rabbitmq "github.com/JosephAntony37900/API-1-Multi/Level_reading/infrastructure/rabbitmq"
+	repo_levels "github.com/JosephAntony37900/API-1-Multi/Level_reading/infrastructure/repository"
+	app_levels "github.com/JosephAntony37900/API-1-Multi/Level_reading/application"
+	control_levels "github.com/JosephAntony37900/API-1-Multi/Level_reading/infrastructure/controllers"
+	routes_levels "github.com/JosephAntony37900/API-1-Multi/Level_reading/infrastructure/routes"
+	rabbitmq "github.com/JosephAntony37900/API-1-Multi/Level_reading/infrastructure/rabbitmq"
 	"github.com/JosephAntony37900/API-1-Multi/helpers"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -28,31 +28,31 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Fatalf("Error cargando el archivo .env: %v", err)
 	}
-	/*
+	
 	rabbitmqUser := os.Getenv("RABBITMQ_USER")
 	rabbitmqPassword := os.Getenv("RABBITMQ_PASSWORD")
 	rabbitmqHost := os.Getenv("RABBITMQ_HOST")
 	rabbitmqPort := os.Getenv("RABBITMQ_PORT")
 
 	rabbitmqURI := fmt.Sprintf("amqp://%s:%s@%s:%s/", rabbitmqUser, rabbitmqPassword, rabbitmqHost, rabbitmqPort)
-	*/
+	
 	db, err := helpers.NewMySQLConnection()
 	if err != nil {
 		log.Fatalf("Error inicializando la conexión a MySQL: %v", err)
 	}
 	defer db.Close()
 
-	/*if err := helpers.InitRabbitMQ(rabbitmqURI); err != nil {
+	if err := helpers.InitRabbitMQ(rabbitmqURI); err != nil {
 		log.Fatalf("Error inicializando RabbitMQ: %v", err)
 	}
-	defer helpers.CloseRabbitMQ()*/
+	defer helpers.CloseRabbitMQ()
 
 	// Repos
 	soapRepo := repo_soap.NewSoapRepoMySQL(db)
 	userRepo := repo_users.NewCreateUserRepoMySQL(db)
-	//levelRepo := repo_levels.NewLevelReadingRepoMySQL(db)
+	levelRepo := repo_levels.NewLevelReadingRepoMySQL(db)
 	
-	/*publisher := rabbitmq.NewRabbitMQPublisher("amq.topic") 
+	publisher := rabbitmq.NewRabbitMQPublisher("amq.topic") 
 
 	createLevelUseCase := app_levels.NewCreateLevelReading(levelRepo)
 	levelMessageService := app_levels.NewLevelReadingMessageService(levelRepo, createLevelUseCase, publisher)
@@ -63,7 +63,7 @@ func main() {
 		if err != nil {
 			log.Fatalf("Error al consumir mensajes: %v", err)
 		}
-	}()*/
+	}()
 
 	// Casos de uso de soap
 	createSoapUseCase := app_soap.NewCreateSoap(soapRepo)
@@ -114,12 +114,12 @@ func main() {
 	routes_users.SetupUserRoutes(engine, createUserController, loginUserController, getAllUsersController, deleteUsersController, updateUsersController)
 
 	// Configurar rutas de Level_reading
-	/*routes_levels.SetupLevelReadingRoutes(
+	routes_levels.SetupLevelReadingRoutes(
 		engine,
 		control_levels.NewCreateLevelReadingController(createLevelUseCase),
 		control_levels.NewGetLevelReadingsController(app_levels.NewGetLevelReading(levelRepo)),
 		control_levels.NewGetLevelReadingByIdController(app_levels.NewGetByIdLevelReading(levelRepo)),
-	)*/
+	)
 
 	engine.Run(":8000")
 }
