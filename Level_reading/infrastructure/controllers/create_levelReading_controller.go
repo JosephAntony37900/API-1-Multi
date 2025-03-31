@@ -24,6 +24,7 @@ func (c *CreateLevelReadingController) Handle(ctx *gin.Context) {
 		Fecha       string  `json:"fecha"`       // Fecha como string (ISO8601: "2023-03-22T15:04:05Z")
 		Id_Jabon    int     `json:"id_jabon"`   
 		Nivel_Jabon float64 `json:"nivel_jabon"` 
+		Codigo_Identificador string `json:"Codigo_Identificador"`
 	}
 
 	if err := ctx.ShouldBindJSON(&request); err != nil {
@@ -42,10 +43,10 @@ func (c *CreateLevelReadingController) Handle(ctx *gin.Context) {
 	// Convierto time.Time a timestamp (int64)
 	timestamp := fecha.Unix()
 
-	log.Printf("Creando nivel de lectura: Fecha=%s, Id_Jabon=%d, Nivel_Jabon=%f",
-		fecha.String(), request.Id_Jabon, request.Nivel_Jabon)
+	log.Printf("Creando nivel de lectura: Fecha=%s, Id_Jabon=%d, Nivel_Jabon=%f, Codigo_Identificador=%s",
+		fecha.String(), request.Id_Jabon, request.Nivel_Jabon, request.Codigo_Identificador)
 
-	if err := c.createUseCase.Run(timestamp, request.Id_Jabon, request.Nivel_Jabon); err != nil {
+	if err := c.createUseCase.Run(timestamp, request.Id_Jabon, request.Nivel_Jabon, request.Codigo_Identificador); err != nil {
 		log.Printf("Error creando el nivel de lectura: %v", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

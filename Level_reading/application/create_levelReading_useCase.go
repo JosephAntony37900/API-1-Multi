@@ -16,7 +16,7 @@ func NewCreateLevelReading(repo repository.Level_ReadingRepository) *CreateLevel
 	return &CreateLevelReading{repo: repo}
 }
 
-func (clr *CreateLevelReading) Run(Fecha int64, Id_Jabon int, Nivel float64) error {
+func (clr *CreateLevelReading) Run(Fecha int64, Id_Jabon int, Nivel float64, Codigo_Identificador string) error {
 	// Convertir int64 a time.Time
 	fecha := time.Unix(Fecha, 0) // Convierte el timestamp al tipo time.Time
 
@@ -41,6 +41,7 @@ func (clr *CreateLevelReading) Run(Fecha int64, Id_Jabon int, Nivel float64) err
 		Fecha:      fecha, // Ahora fecha es de tipo time.Time
 		Id_Jabon:   Id_Jabon,
 		Nivel_Jabon: Nivel_Jabon,
+		Codigo_Identificador: Codigo_Identificador,
 	}
 
 	if err := clr.repo.Save(levelReading); err != nil {
@@ -50,13 +51,14 @@ func (clr *CreateLevelReading) Run(Fecha int64, Id_Jabon int, Nivel float64) err
 	return nil
 }
 
-func (clr *CreateLevelReading) RunWithReturnId(Fecha int64, Id_Jabon int, Nivel float64) (int, error) {
+func (clr *CreateLevelReading) RunWithReturnId(Fecha int64, Id_Jabon int, Nivel float64, Codigo_Identificador string) (int, error) {
 	fecha := time.Unix(Fecha, 0)
 
 	levelReading := entities.Level_Reading{
 		Fecha:       fecha,
 		Id_Jabon:    Id_Jabon,
 		Nivel_Jabon: int(Nivel),
+		Codigo_Identificador: Codigo_Identificador,
 	}
 
 	id, err := clr.repo.SaveWithReturnId(levelReading)

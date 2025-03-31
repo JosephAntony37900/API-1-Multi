@@ -10,4 +10,5 @@ type Level_Reading struct{
 	Nivel_Jabon int
 	Jabon_Nombre string
 	Nivel_Texto  string
+	Codigo_Identificador string
 }
