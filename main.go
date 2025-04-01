@@ -17,6 +17,10 @@ import (
 	app_levels "github.com/JosephAntony37900/API-1-Multi/Level_reading/application"
 	control_levels "github.com/JosephAntony37900/API-1-Multi/Level_reading/infrastructure/controllers"
 	routes_levels "github.com/JosephAntony37900/API-1-Multi/Level_reading/infrastructure/routes"
+	app_order "github.com/JosephAntony37900/API-1-Multi/Order/application"
+	repo_order "github.com/JosephAntony37900/API-1-Multi/Order/infrastructure/repository"
+	control_order "github.com/JosephAntony37900/API-1-Multi/Order/infrastructure/controllers"
+	routes_order "github.com/JosephAntony37900/API-1-Multi/Order/infrastructure/routes"
 	rabbitmq "github.com/JosephAntony37900/API-1-Multi/Level_reading/infrastructure/rabbitmq"
 	"github.com/JosephAntony37900/API-1-Multi/helpers"
 	"github.com/gin-gonic/gin"
@@ -51,6 +55,7 @@ func main() {
 	soapRepo := repo_soap.NewSoapRepoMySQL(db)
 	userRepo := repo_users.NewCreateUserRepoMySQL(db)
 	levelRepo := repo_levels.NewLevelReadingRepoMySQL(db)
+	orderRepo := repo_order.NewOrderRepoMySQL(db)
 	
 	publisher := rabbitmq.NewRabbitMQPublisher("amq.topic") 
 
@@ -80,6 +85,11 @@ func main() {
 	loginUserUseCase := app_users.NewLoginUser(userRepo)
 	updateUsersUseCase := app_users.NewUpdateUser(userRepo)
 
+	// Casos de uso para Order/despachador
+	createOrderUseCase := app_order.NewCreateOrder(orderRepo)
+	getOrderByCodigoIdUseCase := app_order.NewGetOrderByCodigoId(orderRepo)
+	updateOrderUseCase := app_order.NewUpdateOrder(orderRepo)
+
 	// Controladores de soap
 	createSoapController := control_soap.NewCreateSoapController(createSoapUseCase)
 	getAllSoapsController := control_soap.NewGetAllSoapsController(getAllSoapsUseCase)
@@ -94,6 +104,11 @@ func main() {
 	deleteUsersController := control_users.NewDeleteUserController(deleteUsersUseCase)
 	loginUserController := control_users.NewLoginUserController(loginUserUseCase)
 	updateUsersController := control_users.NewUpdateUserController(updateUsersUseCase)
+
+	// Controladores de Order
+	createOrderController := control_order.NewCreateOrderController(createOrderUseCase)
+	getOrderByCodigoIdController := control_order.NewGetOrderController(getOrderByCodigoIdUseCase)
+	updateOrderController := control_order.NewUpdateOrderController(updateOrderUseCase)
 
 	// Configurar el enrutador
 	engine := gin.Default()
@@ -120,6 +135,8 @@ func main() {
 		control_levels.NewGetLevelReadingsController(app_levels.NewGetLevelReading(levelRepo)),
 		control_levels.NewGetLevelReadingByIdController(app_levels.NewGetByIdLevelReading(levelRepo)),
 	)
+
+	routes_order.SetupOrderRoutes(engine, createOrderController, updateOrderController, getOrderByCodigoIdController )
 
 	engine.Run(":8000")
 }

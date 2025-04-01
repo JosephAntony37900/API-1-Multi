@@ -18,7 +18,6 @@ func NewCreateSoapController(createSoap *application.CreateSoap) *CreateSoapCont
 func (c *CreateSoapController) Handle(ctx *gin.Context) {
 	log.Println("Recibe la petición para crear un jabón")
 
-	// Estructura para decodificar el JSON de la solicitud
 	var request struct {
 		Nombre   string  `json:"nombre"`
 		Marca    string  `json:"marca"`
@@ -28,7 +27,6 @@ func (c *CreateSoapController) Handle(ctx *gin.Context) {
 		Id_Usuario_Admin int `json:"id_usuario_admin"`
 	}
 
-	// Decodificar el cuerpo de la solicitud
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		log.Printf("Error decodificando el cuerpo de la solicitud: %v", err)
 		ctx.JSON(400, gin.H{"error": "cuerpo de la solicitud inválido"})
@@ -38,14 +36,12 @@ func (c *CreateSoapController) Handle(ctx *gin.Context) {
 	log.Printf("Creando jabón: Nombre=%s, Marca=%s, Tipo=%s, Precio=%f, Densidad=%f, Usuario id=%d",
 		request.Nombre, request.Marca, request.Tipo, request.Precio, request.Densidad, request.Id_Usuario_Admin)
 
-	// Ejecutar el caso de uso para crear el jabón
 	if err := c.createSoap.Run(request.Nombre, request.Marca, request.Tipo, request.Precio, request.Densidad, request.Id_Usuario_Admin); err != nil {
 		log.Printf("Error creando el jabón: %v", err)
 		ctx.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Respuesta de éxito
 	log.Println("Jabón creado exitosamente")
 	ctx.JSON(201, gin.H{"message": "jabón creado exitosamente"})
 }
