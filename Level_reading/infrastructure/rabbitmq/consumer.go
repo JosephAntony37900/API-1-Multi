@@ -104,13 +104,11 @@ func StartLevelReadingConsumer(service *application.LevelReadingMessageService, 
             return
         }
 
-        // Mostrar los datos deserializados
         log.Printf("Código identificador: %s", message.ID)
         log.Printf("Nivel de lectura: %.2f%%", message.Nivel)
         log.Printf("Tipo: %t (true = líquido, false = polvo)", message.Tipo)
 
-        // Procesar el nivel, el ID del jabón, el código identificador y el tipo
-        idJabon := 1 // Este ID puede variar según tu implementación
+        idJabon := 1 
         err = service.ProcessMessage(message.Nivel, idJabon, message.ID, message.Tipo)
         if err != nil {
             log.Printf("Error al procesar el mensaje: %v", err)

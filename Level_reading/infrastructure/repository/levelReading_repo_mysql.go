@@ -7,6 +7,7 @@ import (
 	"github.com/JosephAntony37900/API-1-Multi/Level_reading/domain/repository"
 	"fmt"
 	"time"
+	"log"
 )
 
 type levelReadingRepoMySQL struct {
@@ -18,9 +19,11 @@ func NewLevelReadingRepoMySQL(db *sql.DB) repository.Level_ReadingRepository {
 }
 
 func (repo *levelReadingRepoMySQL) Save(levelReading entities.Level_Reading) error {
+    
     query := "INSERT INTO Lectura_Nivel (Fecha, Id_Jabon, Nivel_Jabon, Codigo_Identificador, Tipo) VALUES (?, ?, ?, ?, ?)"
     _, err := repo.db.Exec(query, levelReading.Fecha, levelReading.Id_Jabon, levelReading.Nivel_Jabon, levelReading.Codigo_Identificador, levelReading.Tipo)
     if err != nil {
+        log.Printf("Error ejecutando la consulta SQL: %v", err)
         return err
     }
     return nil
@@ -123,21 +126,18 @@ func (repo *levelReadingRepoMySQL) GetLast() (*entities.Level_Reading, error) {
 }
 
 func (repo *levelReadingRepoMySQL) SaveWithReturnId(levelReading entities.Level_Reading) (int, error) {
-	query := `
-		INSERT INTO Lectura_Nivel (Fecha, Id_Jabon, Nivel_Jabon, Codigo_Identificador, Tipo)
-		VALUES (?, ?, ?)
-	`
-	result, err := repo.db.Exec(query, levelReading.Fecha, levelReading.Id_Jabon, levelReading.Nivel_Jabon, levelReading.Codigo_Identificador, levelReading.Tipo)
-	if err != nil {
-		return 0, fmt.Errorf("error guardando nivel de lectura: %w", err)
-	}
+    query := "INSERT INTO Lectura_Nivel (Fecha, Id_Jabon, Nivel_Jabon, Codigo_Identificador, Tipo) VALUES (?, ?, ?, ?, ?)"
+    result, err := repo.db.Exec(query, levelReading.Fecha, levelReading.Id_Jabon, levelReading.Nivel_Jabon, levelReading.Codigo_Identificador, levelReading.Tipo)
+    if err != nil {
+        return 0, err
+    }
 
-	id, err := result.LastInsertId()
-	if err != nil {
-		return 0, fmt.Errorf("error obteniendo el ID del nivel de lectura: %w", err)
-	}
+    id, err := result.LastInsertId()
+    if err != nil {
+        return 0, err
+    }
 
-	return int(id), nil
+    return int(id), nil
 }
 
 func (r *levelReadingRepoMySQL) FindUserAdminByJabon(idJabon int) (int, error) {

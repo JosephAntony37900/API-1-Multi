@@ -3,6 +3,7 @@ package application
 import (
 	"fmt"
 	"time"
+    "log"
 
 	"github.com/JosephAntony37900/API-1-Multi/Level_reading/domain/entities"
 	"github.com/JosephAntony37900/API-1-Multi/Level_reading/domain/repository"
@@ -55,16 +56,24 @@ func (clr *CreateLevelReading) Run(Fecha int64, Id_Jabon int, Nivel float64, Cod
 func (clr *CreateLevelReading) RunWithReturnId(Fecha int64, Id_Jabon int, Nivel float64, Codigo_Identificador string, Tipo bool) (int, error) {
     fecha := time.Unix(Fecha, 0)
 
+    log.Printf("Valores utilizados en RunWithReturnId:")
+    log.Printf("- Fecha: %v", fecha)
+    log.Printf("- Id_Jabon: %d", Id_Jabon)
+    log.Printf("- Nivel_Jabon: %d", int(Nivel))
+    log.Printf("- Codigo_Identificador: %s", Codigo_Identificador)
+    log.Printf("- Tipo: %t", Tipo)
+
     levelReading := entities.Level_Reading{
-        Fecha:              fecha,
-        Id_Jabon:           Id_Jabon,
-        Nivel_Jabon:        int(Nivel),
+        Fecha:               fecha,
+        Id_Jabon:            Id_Jabon,
+        Nivel_Jabon:         int(Nivel),
         Codigo_Identificador: Codigo_Identificador,
-        Tipo:               Tipo, 
+        Tipo:                Tipo,
     }
 
     id, err := clr.repo.SaveWithReturnId(levelReading)
     if err != nil {
+        log.Printf("Error guardando nivel de lectura con SaveWithReturnId: %v", err)
         return 0, fmt.Errorf("error guardando el nivel de lectura: %w", err)
     }
 

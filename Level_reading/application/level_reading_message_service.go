@@ -28,6 +28,7 @@ func NewLevelReadingMessageService(repo repository.Level_ReadingRepository, crea
 }
 
 func (s *LevelReadingMessageService) ProcessMessage(level float64, idJabon int, codigoIdentificador string, tipo bool) error {
+
     lastLevel, err := s.repo.GetLast()
     if err != nil {
         return fmt.Errorf("error al obtener el último nivel de lectura: %w", err)
