@@ -17,7 +17,12 @@ func InitLevelDependencies(engine *gin.Engine, db *sql.DB, rabbitmqURI string) {
 	if err := helpers.InitRabbitMQ(rabbitmqURI); err != nil {
 		log.Fatalf("Error inicializando RabbitMQ: %v", err)
 	}
-	defer helpers.CloseRabbitMQ()
+
+	// Obtener el canal RabbitMQ
+	channel := helpers.GetRabbitMQChannel()
+	if channel == nil {
+		log.Fatalf("RabbitMQ channel is not initialized")
+	}
 
 	levelRepo := repository.NewLevelReadingRepoMySQL(db)
 
@@ -26,9 +31,8 @@ func InitLevelDependencies(engine *gin.Engine, db *sql.DB, rabbitmqURI string) {
 	createLevelUseCase := application.NewCreateLevelReading(levelRepo)
 	levelMessageService := application.NewLevelReadingMessageService(levelRepo, createLevelUseCase, publisher)
 
-	// Consumir mensajes desde RabbitMQ
 	go func() {
-		err := rabbitmq.StartLevelReadingConsumer(levelMessageService, "nivel.lectura", "sensor.nivel", "amp.topic")
+		err := rabbitmq.StartLevelReadingConsumer(levelMessageService, "nivel.lectura", "sensor.nivel", "amq.topic")
 		if err != nil {
 			log.Fatalf("Error al consumir mensajes: %v", err)
 		}
