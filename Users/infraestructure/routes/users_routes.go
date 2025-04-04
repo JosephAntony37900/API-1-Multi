@@ -9,12 +9,13 @@ import (
 
 func SetupUserRoutes(r *gin.Engine, createUserController *controllers.CreateUserController, 
     loginUserController *controllers.LoginUserController, getUserController *controllers.GetUsersController, 
-    deleteUserController *controllers.DeleteUserController, updateUserController *controllers.UpdateUserController) {
+    deleteUserController *controllers.DeleteUserController, updateUserController *controllers.UpdateUserController, createClientController *controllers.CreateClientController) {
     
     jwtSecret := os.Getenv("JWT_SECRET")
     
     r.POST("/users", createUserController.Handle)
     r.POST("/login", loginUserController.Handle)
+    r.POST("/users-client", createClientController.Handle)
     
     authGroup := r.Group("/")
     authGroup.Use(service.AuthMiddleware(jwtSecret))

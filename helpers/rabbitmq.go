@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"log"
-
 	"github.com/streadway/amqp"
 )
 
@@ -10,19 +9,20 @@ var rabbitConn *amqp.Connection
 var rabbitChannel *amqp.Channel
 
 func InitRabbitMQ(uri string) error {
-	var err error
-	rabbitConn, err = amqp.Dial(uri)
+	conn, err := amqp.Dial(uri)
 	if err != nil {
 		log.Printf("Failed to connect to RabbitMQ: %v", err)
 		return err
 	}
+	rabbitConn = conn
 	log.Println("Connected to RabbitMQ")
 
-	rabbitChannel, err = rabbitConn.Channel()
+	channel, err := conn.Channel()
 	if err != nil {
 		log.Printf("Failed to create RabbitMQ channel: %v", err)
 		return err
 	}
+	rabbitChannel = channel
 	log.Println("RabbitMQ channel created")
 	return nil
 }
