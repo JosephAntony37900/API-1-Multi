@@ -35,6 +35,13 @@ func InitUserDependencies(engine *gin.Engine, db *sql.DB) {
 	loginUserController := control_users.NewLoginUserController(loginUserUseCase)
 	updateUsersController := control_users.NewUpdateUserController(updateUsersUseCase)
 
+
+	
+	createClientUseCase := app_users.NewCreateClient(userRepo, bcryptService)
+	createClientController := control_users.NewCreateClientController(createClientUseCase)
+
+
+
 	routes_users.SetupUserRoutes(engine, createUserController, loginUserController, 
-		getAllUsersController, deleteUsersController, updateUsersController)
+		getAllUsersController, deleteUsersController, updateUsersController, createClientController)
 }

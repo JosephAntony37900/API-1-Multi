@@ -21,7 +21,6 @@ func NewCreateUser(repo repository.UserRepository, bcrypt services.IBcrypService
 }
 
 func (cu *CreateUsers) Run(nombre string, email string, contraseña string, Codigo_Identificador string) error {
-	// Generar contraseña encriptada
 	hashedPassword, err := cu.bcrypt.HashPassword(contraseña)
 	if err != nil {
 		return fmt.Errorf("error al encriptar la contraseña: %w", err)
@@ -34,7 +33,6 @@ func (cu *CreateUsers) Run(nombre string, email string, contraseña string, Codi
 		Codigo_Identificador: Codigo_Identificador,
 	}
 
-	// Guardar usuario en el repositorio
 	if err := cu.repo.Save(user); err != nil {
 		return fmt.Errorf("error al guardar el usuario: %w", err)
 	}
