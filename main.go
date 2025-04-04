@@ -19,7 +19,7 @@ func main() {
 		log.Fatalf("Error cargando el archivo .env: %v", err)
 	}
 
-	// Configuración de RabbitMQ
+	//Configuración de RabbitMQ
 	rabbitmqUser := os.Getenv("RABBITMQ_USER")
 	rabbitmqPassword := os.Getenv("RABBITMQ_PASSWORD")
 	rabbitmqHost := os.Getenv("RABBITMQ_HOST")
