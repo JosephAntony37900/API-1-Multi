@@ -5,35 +5,37 @@ import (
 
 	"github.com/JosephAntony37900/API-1-Multi/Users/domain/entities"
 	"github.com/JosephAntony37900/API-1-Multi/Users/domain/repository"
-	helpers "github.com/JosephAntony37900/API-1-Multi/helpers"
+	"github.com/JosephAntony37900/API-1-Multi/Users/domain/services"
 )
 
 type LoginUser struct {
-	repo repository.UserRepository
+	repo   repository.UserRepository
+	jwt    services.TokenManager
+	bcrypt services.IBcrypService
 }
 
-func NewLoginUser(repo repository.UserRepository) *LoginUser {
-	return &LoginUser{repo: repo}
+func NewLoginUser(repo repository.UserRepository, jwt services.TokenManager, bcrypt services.IBcrypService) *LoginUser {
+	return &LoginUser{
+		repo:   repo,
+		jwt:    jwt,
+		bcrypt: bcrypt,
+	}
 }
 
 func (lu *LoginUser) Run(email string, password string) (*entities.Users, string, error) {
-	// Busca al usuario por su email
 	user, err := lu.repo.FindByEmail(email)
 	if err != nil {
-		return nil, "", fmt.Errorf("usuario no encontrado: %w", err)
+		return nil, "", fmt.Errorf("credenciales inválidas")
 	}
 
-	// Valida la contraseña ingresada
-	if !helpers.ComparePassword(user.Contraseña, password) {
-		return nil, "", fmt.Errorf("contraseña incorrecta")
+	if !lu.bcrypt.ComparePasswords(user.Contraseña, password) {
+		return nil, "", fmt.Errorf("credenciales inválidas")
 	}
 
-	// Genera el token JWT usando el ID del usuario
-	token, err := helpers.GenerateJWT(user.Id)
+	token, err := lu.jwt.GenerateToken(user.Id)
 	if err != nil {
-		return nil, "", fmt.Errorf("error generando el token JWT: %w", err)
+		return nil, "", fmt.Errorf("error generando token: %w", err)
 	}
 
-	// Retorna la información del usuario y el token
 	return user, token, nil
 }
