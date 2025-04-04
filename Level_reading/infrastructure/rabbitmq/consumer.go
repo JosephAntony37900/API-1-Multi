@@ -24,7 +24,6 @@ func ConfigureAndConsume(queueName, routingKey, exchangeName string, handleMessa
         return logError("RabbitMQ channel is not initialized")
     }
 
-    // Declarar el exchange
     if err := channel.ExchangeDeclare(
         exchangeName, // nombre del exchange
         "topic",      // tipo
@@ -37,7 +36,6 @@ func ConfigureAndConsume(queueName, routingKey, exchangeName string, handleMessa
         return logError("Failed to declare exchange: %v", err)
     }
 
-    // Declarar la cola
     queue, err := channel.QueueDeclare(
         queueName, // nombre de la cola
         true,      // durable
@@ -50,7 +48,6 @@ func ConfigureAndConsume(queueName, routingKey, exchangeName string, handleMessa
         return logError("Failed to declare queue: %v", err)
     }
 
-    // Vincular la cola al exchange con la routing key
     if err := channel.QueueBind(
         queue.Name,   // nombre de la cola
         routingKey,   // routing key
@@ -74,7 +71,6 @@ func ConfigureAndConsume(queueName, routingKey, exchangeName string, handleMessa
         return logError("Failed to register a consumer: %v", err)
     }
 
-    // Procesar mensajes
     go func() {
         for msg := range messages {
             log.Printf("Received a message: %s", msg.Body)
@@ -86,7 +82,6 @@ func ConfigureAndConsume(queueName, routingKey, exchangeName string, handleMessa
     return nil
 }
 
-// logError simplifica el manejo de errores con logging
 func logError(format string, args ...interface{}) error {
     log.Printf(format, args...)
     return fmt.Errorf(format, args...)
@@ -96,7 +91,6 @@ func StartLevelReadingConsumer(service *application.LevelReadingMessageService, 
     handleMessage := func(msg amqp.Delivery) {
         log.Printf("Received a message: %s", msg.Body)
 
-        // Deserializar el mensaje JSON
         var message Message
         err := json.Unmarshal(msg.Body, &message)
         if err != nil {
