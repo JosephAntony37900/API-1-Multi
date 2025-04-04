@@ -5,26 +5,36 @@ import (
 
 	"github.com/JosephAntony37900/API-1-Multi/Users/domain/entities"
 	"github.com/JosephAntony37900/API-1-Multi/Users/domain/repository"
-	"github.com/JosephAntony37900/API-1-Multi/helpers"
+	"github.com/JosephAntony37900/API-1-Multi/Users/domain/services"
 )
 
 type CreateUsers struct {
-	repo repository.UserRepository
+	repo   repository.UserRepository
+	bcrypt services.IBcrypService
 }
 
-func NewCreateUser(repo repository.UserRepository) *CreateUsers {
-	return &CreateUsers{repo: repo}
+func NewCreateUser(repo repository.UserRepository, bcrypt services.IBcrypService) *CreateUsers {
+	return &CreateUsers{
+		repo:   repo,
+		bcrypt: bcrypt,
+	}
 }
 
 func (cu *CreateUsers) Run(nombre string, email string, contraseña string, Codigo_Identificador string) error {
-	hashedPassword, err := helpers.HashPassword(contraseña)
+	// Generar contraseña encriptada
+	hashedPassword, err := cu.bcrypt.HashPassword(contraseña)
 	if err != nil {
 		return fmt.Errorf("error al encriptar la contraseña: %w", err)
 	}
 
-	user := entities.Users{Nombre: nombre, Email: email, Contraseña: hashedPassword, Codigo_Identificador: Codigo_Identificador}
-	fmt.Println("Contraseña original en el UseCase: ", contraseña)
-	fmt.Println("Hash nuevo:", hashedPassword, "Longitud:", len(hashedPassword))
+	user := entities.Users{
+		Nombre:              nombre,
+		Email:               email,
+		Contraseña:          hashedPassword,
+		Codigo_Identificador: Codigo_Identificador,
+	}
+
+	// Guardar usuario en el repositorio
 	if err := cu.repo.Save(user); err != nil {
 		return fmt.Errorf("error al guardar el usuario: %w", err)
 	}
