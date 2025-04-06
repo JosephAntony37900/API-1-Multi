@@ -19,14 +19,15 @@ func SetupRoutes(
 
 	jwtSecret := os.Getenv("JWT_SECRET")
 
-	// Grupo de rutas públicas ( cambiar despues a protegidas porfa)
-	engine.POST("/soaps", createSoapController.Handle)
+	// Rutas públicas (no requieren autenticación)
 	engine.GET("/soaps", getAllSoapsController.Handle)
 	engine.GET("/soaps/:id", getByIdSoapController.Handle)
 
+	// Rutas protegidas (requieren token JWT)
 	protectedRoutes := engine.Group("/soaps")
 	protectedRoutes.Use(service.AuthMiddleware(jwtSecret))
 
+	protectedRoutes.POST("", createSoapController.Handle) // ← ahora protegida
 	protectedRoutes.PUT("/:id", updateSoapController.Handle)
 	protectedRoutes.DELETE("/:id", deleteSoapController.Handle)
 	protectedRoutes.GET("/admin/:adminId", getSoapsByAdminController.Handle)
