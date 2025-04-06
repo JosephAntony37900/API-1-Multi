@@ -1,14 +1,14 @@
 package main
 
 import (
-	"log"
 	"fmt"
+	"log"
 	"os"
 
-	soap_infra "github.com/JosephAntony37900/API-1-Multi/Soaps/infrastructure"
-	user_infra "github.com/JosephAntony37900/API-1-Multi/Users/infraestructure"
 	level_infra "github.com/JosephAntony37900/API-1-Multi/Level_reading/infrastructure"
 	order_infra "github.com/JosephAntony37900/API-1-Multi/Order/infrastructure"
+	soap_infra "github.com/JosephAntony37900/API-1-Multi/Soaps/infrastructure"
+	user_infra "github.com/JosephAntony37900/API-1-Multi/Users/infraestructure"
 	"github.com/JosephAntony37900/API-1-Multi/helpers"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -19,7 +19,7 @@ func main() {
 		log.Fatalf("Error cargando el archivo .env: %v", err)
 	}
 
-
+	rabbitmqUser := os.Getenv("RABBITMQ_USER")
 	rabbitmqPassword := os.Getenv("RABBITMQ_PASSWORD")
 	rabbitmqHost := os.Getenv("RABBITMQ_HOST")
 	rabbitmqPort := os.Getenv("RABBITMQ_PORT")
