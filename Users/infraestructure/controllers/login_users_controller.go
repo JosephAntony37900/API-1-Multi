@@ -49,6 +49,7 @@ func (c *LoginUserController) Handle(ctx *gin.Context) {
 			"nombre": user.Nombre,
 			"email":  user.Email,
 			"rol":    user.Id_Rol,
+			"codigo_identificador": user.Codigo_Identificador,
 		},
 	})
 }
