@@ -39,5 +39,5 @@ func main() {
 	order_infra.InitOrderDependencies(engine, db, rabbitmqURI)
 	level_infra.InitLevelDependencies(engine, db, rabbitmqURI)
 
-	engine.Run(":8000")
+	engine.Run("0.0.0.0:8000")
 }
