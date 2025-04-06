@@ -19,8 +19,7 @@ func main() {
 		log.Fatalf("Error cargando el archivo .env: %v", err)
 	}
 
-	//Configuración de RabbitMQ
-	rabbitmqUser := os.Getenv("RABBITMQ_USER")
+
 	rabbitmqPassword := os.Getenv("RABBITMQ_PASSWORD")
 	rabbitmqHost := os.Getenv("RABBITMQ_HOST")
 	rabbitmqPort := os.Getenv("RABBITMQ_PORT")
@@ -37,8 +36,8 @@ func main() {
 
 	user_infra.InitUserDependencies(engine, db)
 	soap_infra.InitSoapDependencies(engine, db)
-	order_infra.InitOrderDependencies(engine, db)
+	order_infra.InitOrderDependencies(engine, db, rabbitmqURI)
 	level_infra.InitLevelDependencies(engine, db, rabbitmqURI)
 
-	engine.Run(":8000")
+	engine.Run("0.0.0.0:8000")
 }

@@ -24,15 +24,24 @@ func (r *UserRepoMySQL) Save(User entities.Users) error {
 	return nil
 }
 
+func (r *UserRepoMySQL) SaveClient(User entities.Users) error {
+	query := "INSERT INTO Usuarios (Nombre, Email, Contraseña, Id_Rol, Codigo_Identificador) VALUES (?, ?, ?, ?,?)"
+	_, err := r.db.Exec(query, User.Nombre, User.Email, User.Contraseña, User.Id_Rol,User.Codigo_Identificador)
+	if err != nil {
+		return fmt.Errorf("error insertando User: %w", err)
+	}
+	return nil
+}
+
 func (r *UserRepoMySQL) FindByID(id int) (*entities.Users, error) {
-	query := "SELECT Id, Nombre, Email FROM Usuarios WHERE Id = ?"
+	query := "SELECT Id, Nombre, Email, Id_Rol FROM Usuarios WHERE Id = ?"
 	row := r.db.QueryRow(query, id)
 
-	var User entities.Users
-	if err := row.Scan(&User.Id, &User.Nombre, &User.Email); err != nil {
-		return nil, fmt.Errorf("error buscando el User: %w", err)
+	var user entities.Users
+	if err := row.Scan(&user.Id, &user.Nombre, &user.Email, &user.Id_Rol); err != nil {
+		return nil, fmt.Errorf("error buscando el usuario: %w", err)
 	}
-	return &User, nil
+	return &user, nil
 }
 
 func (r *UserRepoMySQL) FindAll() ([]entities.Users, error) {
