@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/JosephAntony37900/API-1-Multi/Order_By_servo/domain/messaging_MQ"
-	"github.com/JosephAntony37900/API-1-Multi/Order_By_servo/domain/service"
+	"github.com/JosephAntony37900/API-1-Multi/Order_By_bomba/domain/messaging_MQ"
+	"github.com/JosephAntony37900/API-1-Multi/Order_By_bomba/domain/service"
 	"github.com/JosephAntony37900/API-1-Multi/helpers"
 	"github.com/streadway/amqp"
 )
