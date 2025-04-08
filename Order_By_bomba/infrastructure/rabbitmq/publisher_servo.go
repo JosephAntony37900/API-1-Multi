@@ -8,7 +8,7 @@ import (
     "time"
 
     MQTT "github.com/eclipse/paho.mqtt.golang"
-    "github.com/JosephAntony37900/API-1-Multi/Order_By_servo/domain/messaging_MQ"
+    "github.com/JosephAntony37900/API-1-Multi/Order_By_bomba/domain/messaging_MQ"
 )
 
 type RabbitMQServoPublisher struct{}
@@ -26,7 +26,7 @@ func (p *RabbitMQServoPublisher) PublishToServoQueue(codigoIdentificador string,
 
     opts := MQTT.NewClientOptions().
         AddBroker(brokerURL).
-        SetClientID("servo_publisher").
+        SetClientID("bomba_publisher").
         SetUsername(mqttUser).
         SetPassword(mqttPassword).
         SetConnectTimeout(5 * time.Second)
@@ -47,7 +47,7 @@ func (p *RabbitMQServoPublisher) PublishToServoQueue(codigoIdentificador string,
         return fmt.Errorf("error serializando mensaje: %w", err)
     }
 
-    topic := "motor/servo"
+    topic := "motor/bomba"
     qos := byte(0)         // 0 = no garantiza entrega, podemos usar 1 si queremos asegurarlo
 
     token := client.Publish(topic, qos, false, messageBody)
