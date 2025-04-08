@@ -46,7 +46,7 @@ func (repo *orderRepoMySQL) FindById(codigoIdentificador string) (*entities.Orde
     err := row.Scan(&order.Id, &order.Id_Jabon, &order.Cantidad, &order.Estado, &order.Costo, &order.Codigo_Identificador, &order.Tipo)
     if err != nil {
         if err == sql.ErrNoRows {
-            return nil, nil // No se encontró ninguna orden
+            return nil, nil
         }
         return nil, fmt.Errorf("error buscando la orden por Código_Identificador: %w", err)
     }

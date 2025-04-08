@@ -18,7 +18,6 @@ func NewRabbitMQServoPublisher() messagingmq.ServoMessagePublisher {
 }
 
 func (p *RabbitMQServoPublisher) PublishToServoQueue(codigoIdentificador string, despachoSegundos int) error {
-    // Leer valores desde .env
     mqttHost := os.Getenv("RABBITMQ_HOST")
     mqttUser := os.Getenv("RABBITMQ_USER")
     mqttPassword := os.Getenv("RABBITMQ_PASSWORD")
@@ -38,7 +37,6 @@ func (p *RabbitMQServoPublisher) PublishToServoQueue(codigoIdentificador string,
         return fmt.Errorf("❌ Error conectando al broker MQTT: %w", token.Error())
     }
 
-    // Mensaje EXACTO que espera el ESP32
     message := map[string]interface{}{
         "ID":     codigoIdentificador,
         "Tiempo": despachoSegundos,
@@ -49,8 +47,8 @@ func (p *RabbitMQServoPublisher) PublishToServoQueue(codigoIdentificador string,
         return fmt.Errorf("error serializando mensaje: %w", err)
     }
 
-    topic := "motor/servo" // Debe coincidir con el que escucha el ESP32
-    qos := byte(0)         // 0 = no garantiza entrega, puedes usar 1 si quieres asegurarlo
+    topic := "motor/servo"
+    qos := byte(0)         // 0 = no garantiza entrega, podemos usar 1 si queremos asegurarlo
 
     token := client.Publish(topic, qos, false, messageBody)
     token.Wait()
