@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/JosephAntony37900/API-1-Multi/Order/domain/entities"
+	"github.com/JosephAntony37900/API-1-Multi/Order_By_servo/domain/entities"
 )
 
 type orderRepoMySQL struct {
@@ -36,19 +36,20 @@ func (repo *orderRepoMySQL) Update(order entities.Order) error {
 	return nil
 }
 
-func (repo *orderRepoMySQL) FindById(Codigo_Identificador string) (*entities.Order, error) {
-	query := `SELECT Id, Id_Jabon, Cantidad, Estado, Costo, Codigo_Identificador, Tipo 
-			  FROM Orden 
-			  WHERE Codigo_Identificador = ?`
-	row := repo.db.QueryRow(query, Codigo_Identificador)
+func (repo *orderRepoMySQL) FindById(codigoIdentificador string) (*entities.Order, error) {
+    query := `SELECT Id, Id_Jabon, Cantidad, Estado, Costo, Codigo_Identificador, Tipo 
+              FROM Orden 
+              WHERE Codigo_Identificador = ?`
+    row := repo.db.QueryRow(query, codigoIdentificador)
 
-	var order entities.Order
-	err := row.Scan(&order.Id, &order.Id_Jabon, &order.Cantidad, &order.Estado, &order.Costo, &order.Codigo_Identificador, &order.Tipo)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("no se encontró ninguna orden con el Código_Identificador: %s", Codigo_Identificador)
-		}
-		return nil, fmt.Errorf("error buscando la orden por Código_Identificador: %w", err)
-	}
-	return &order, nil
+    var order entities.Order
+    err := row.Scan(&order.Id, &order.Id_Jabon, &order.Cantidad, &order.Estado, &order.Costo, &order.Codigo_Identificador, &order.Tipo)
+    if err != nil {
+        if err == sql.ErrNoRows {
+            return nil, nil // No se encontró ninguna orden
+        }
+        return nil, fmt.Errorf("error buscando la orden por Código_Identificador: %w", err)
+    }
+
+    return &order, nil
 }

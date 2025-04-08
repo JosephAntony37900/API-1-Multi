@@ -3,8 +3,8 @@ package application
 import (
 	"fmt"
 
-	_"github.com/JosephAntony37900/API-1-Multi/Order/domain/entities"
-	"github.com/JosephAntony37900/API-1-Multi/Order/domain/repository"
+	_"github.com/JosephAntony37900/API-1-Multi/Order_By_servo/domain/entities"
+	"github.com/JosephAntony37900/API-1-Multi/Order_By_servo/domain/repository"
 )
 
 type UpdateOrder struct {

@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/JosephAntony37900/API-1-Multi/Order/application"
+	"github.com/JosephAntony37900/API-1-Multi/Order_By_servo/application"
 )
 
 type GetOrderController struct {
