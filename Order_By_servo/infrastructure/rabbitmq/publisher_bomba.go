@@ -8,16 +8,16 @@ import (
     "time"
 
     MQTT "github.com/eclipse/paho.mqtt.golang"
-    "github.com/JosephAntony37900/API-1-Multi/Order_By_bomba/domain/messaging_MQ"
+    "github.com/JosephAntony37900/API-1-Multi/Order_By_servo/domain/messaging_MQ"
 )
 
-type RabbitMQServoPublisher struct{}
+type RabbitMQBombaPublisher struct{}
 
-func NewRabbitMQServoPublisher() messagingmq.ServoMessagePublisher {
-    return &RabbitMQServoPublisher{}
+func NewRabbitMQBombaPublisher() messagingmq.MessagePublisher {
+    return &RabbitMQBombaPublisher{}
 }
 
-func (p *RabbitMQServoPublisher) PublishToServoQueue(codigoIdentificador string, despachoSegundos int) error {
+func (p *RabbitMQBombaPublisher) Publish(codigoIdentificador string, despachoSegundos int) error {
     mqttHost := os.Getenv("RABBITMQ_HOST")
     mqttUser := os.Getenv("RABBITMQ_USER")
     mqttPassword := os.Getenv("RABBITMQ_PASSWORD")
@@ -34,7 +34,7 @@ func (p *RabbitMQServoPublisher) PublishToServoQueue(codigoIdentificador string,
     client := MQTT.NewClient(opts)
 
     if token := client.Connect(); token.Wait() && token.Error() != nil {
-        return fmt.Errorf("❌ Error conectando al broker MQTT: %w", token.Error())
+        return fmt.Errorf("Error conectando al broker MQTT: %w", token.Error())
     }
 
     message := map[string]interface{}{

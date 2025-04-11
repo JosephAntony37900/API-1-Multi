@@ -13,11 +13,11 @@ import (
 
 type RabbitMQServoPublisher struct{}
 
-func NewRabbitMQServoPublisher() messagingmq.ServoMessagePublisher {
+func NewRabbitMQServoPublisher() messagingmq.MessagePublisher {
     return &RabbitMQServoPublisher{}
 }
 
-func (p *RabbitMQServoPublisher) PublishToServoQueue(codigoIdentificador string, despachoSegundos int) error {
+func (p *RabbitMQServoPublisher) Publish(codigoIdentificador string, despachoSegundos int) error {
     mqttHost := os.Getenv("RABBITMQ_HOST")
     mqttUser := os.Getenv("RABBITMQ_USER")
     mqttPassword := os.Getenv("RABBITMQ_PASSWORD")
@@ -34,7 +34,7 @@ func (p *RabbitMQServoPublisher) PublishToServoQueue(codigoIdentificador string,
     client := MQTT.NewClient(opts)
 
     if token := client.Connect(); token.Wait() && token.Error() != nil {
-        return fmt.Errorf("❌ Error conectando al broker MQTT: %w", token.Error())
+        return fmt.Errorf("Error conectando al broker MQTT: %w", token.Error())
     }
 
     message := map[string]interface{}{

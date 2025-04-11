@@ -49,7 +49,6 @@ func (u *UpdateOrderController) Handle(ctx *gin.Context) {
         Tipo:                request.Tipo,
     }
 
-    // Actualizar la orden
     if err := u.updateOrder.Run(order.Id_Jabon, order.Cantidad, order.Estado, order.Costo, order.Codigo_Identificador, order.Tipo); err != nil {
         log.Printf("Error actualizando la orden: %v", err)
         ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Error actualizando la orden"})
@@ -58,9 +57,13 @@ func (u *UpdateOrderController) Handle(ctx *gin.Context) {
 
     log.Println("Orden actualizada exitosamente")
 
-    // Procesar despacho si es de jabón en polvo (Tipo = false)
-    if !order.Tipo && order.Estado == 2 { // Solo procesar si el estado es "Pendiente"
-        err := u.orderService.ProcessOrder(order.Codigo_Identificador, int(order.Cantidad*5), "Vaso presente", order.Tipo) // Ejemplo: segundos = cantidad * 5
+    if !order.Tipo && order.Estado == 2 { 
+        tiempoDespacho := int(order.Cantidad * 5) 
+        err := u.orderService.ProcessOrder(
+            order.Codigo_Identificador,
+            tiempoDespacho,
+            order.Tipo,
+        )
         if err != nil {
             log.Printf("Error procesando el despacho: %v", err)
             ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Error procesando el despacho"})

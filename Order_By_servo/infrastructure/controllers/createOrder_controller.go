@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/JosephAntony37900/API-1-Multi/Order_By_servo/application"
-	_"github.com/JosephAntony37900/API-1-Multi/Order_By_servo/domain/entities"
 	"github.com/JosephAntony37900/API-1-Multi/Order_By_servo/domain/service"
 	"github.com/gin-gonic/gin"
 )
@@ -55,7 +54,6 @@ func (c *CreateOrderController) Handle(ctx *gin.Context) {
     err := c.orderService.ProcessOrder(
         request.Codigo_Identificador,
         tiempoDespacho,
-        "",
         request.Tipo,
     )
     if err != nil {

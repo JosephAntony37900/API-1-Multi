@@ -6,7 +6,7 @@ import (
 )
 
 func SetupOrderRoutes(router *gin.Engine, createController *controllers.CreateOrderController, updateController *controllers.UpdateOrderController, getController *controllers.GetOrderController) {
-	router.POST("/order/servo", createController.Handle)      
-	router.PUT("/order/servo", updateController.Handle)      
-	router.GET("/order/servo", getController.Handle)         
+	router.POST("/order", createController.Handle)      
+	router.PUT("/order", updateController.Handle)      
+	router.GET("/order", getController.Handle)         
 }

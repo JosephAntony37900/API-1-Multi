@@ -11,77 +11,60 @@ import (
 )
 
 type OrderService struct {
-    repo       repository.OrderRepository
-    publisher  messagingmq.ServoMessagePublisher
-    LastInfraredState map[string]messagingmq.Message
+    repo        repository.OrderRepository
+    bombaPub    messagingmq.MessagePublisher
+    servoPub    messagingmq.MessagePublisher
 }
 
-func NewOrderService(repo repository.OrderRepository, publisher messagingmq.ServoMessagePublisher) *OrderService {
+func NewOrderService(repo repository.OrderRepository, bombaPub, servoPub messagingmq.MessagePublisher) *OrderService {
     return &OrderService{
-        repo:      repo,
-        publisher: publisher,
-        LastInfraredState: make(map[string]messagingmq.Message),
+        repo:     repo,
+        bombaPub: bombaPub,
+        servoPub: servoPub,
     }
 }
 
-func (service *OrderService) GetLastInfraredState(codigoIdentificador string) (*messagingmq.Message, error) {
-    message, exists := service.LastInfraredState[codigoIdentificador]
-    if !exists {
-        return nil, fmt.Errorf("estado infrarrojo no encontrado para el Código %s", codigoIdentificador)
-    }
-    return &message, nil
-}
-
-
-func (service *OrderService) ProcessOrder(codigoIdentificador string, despachoSegundos int, _ string, tipo bool) error {
+func (service *OrderService) ProcessOrder(codigoIdentificador string, despachoSegundos int, tipo bool) error {
     log.Printf("[PROCESAR] Inicio - Codigo: %s, Tiempo: %d, Tipo: %t", codigoIdentificador, despachoSegundos, tipo)
 
-    infraredMessage, exists := service.LastInfraredState[codigoIdentificador]
-    if !exists {
-        log.Printf("[PROCESAR] Estado infrarrojo no encontrado para el Código %s. No se puede procesar la orden.", codigoIdentificador)
-        return fmt.Errorf("estado infrarrojo no encontrado para el Código %s", codigoIdentificador)
+    order, err := service.repo.FindById(codigoIdentificador)
+    if err != nil && err.Error() != "no se encontró ninguna orden" {
+        return fmt.Errorf("error buscando orden: %w", err)
     }
 
-    vasoPresente := infraredMessage.Estado == "Vaso presente"
-    esPolvo := !infraredMessage.Tipo
-
-    if vasoPresente && esPolvo {
-        log.Println("[PROCESAR] Condiciones CUMPLIDAS - Vaso presente y tipo polvo")
-
-        order, err := service.repo.FindById(codigoIdentificador)
-        if err != nil && err.Error() != "no se encontró ninguna orden" {
-            return fmt.Errorf("error buscando orden: %w", err)
+    if order == nil {
+        log.Printf("[ORDEN] Creando nueva orden para %s", codigoIdentificador)
+        newOrder := entities.Order{
+            Codigo_Identificador: codigoIdentificador,
+            Estado:               2,
+            Tipo:                 tipo,
+            Id_Jabon:              1,
         }
-
-        if order == nil {
-            log.Printf("[ORDEN] Creando nueva orden para %s", codigoIdentificador)
-            newOrder := entities.Order{
-                Codigo_Identificador: codigoIdentificador,
-                Estado:               2,
-                Tipo:                 false, 
-            }
-            if err := service.repo.Save(newOrder); err != nil {
-                return fmt.Errorf("error creando orden: %w", err)
-            }
-            order = &newOrder
+        if err := service.repo.Save(newOrder); err != nil {
+            return fmt.Errorf("error creando orden: %w", err) // aquí es donde ocurre el error
         }
-
-        log.Printf("[SERVO] Enviando comando de apertura por %d segundos", despachoSegundos)
-        if err := service.publisher.PublishToServoQueue(codigoIdentificador, despachoSegundos); err != nil {
-            log.Printf("[ERROR] Publicando al servo: %v", err)
-            return err
-        }
-
-        go func() {
-            time.Sleep(time.Duration(despachoSegundos) * time.Second)
-            log.Printf("[ORDEN] Despacho completado para %s", codigoIdentificador)
-            service.ChangeOrderState(codigoIdentificador, 1) 
-        }()
-        return nil
+        order = &newOrder
     }
 
-    log.Printf("[PROCESAR] Condiciones NO CUMPLIDAS - Vaso presente: %t, Es polvo: %t", vasoPresente, esPolvo)
-    return fmt.Errorf("condiciones no cumplidas para el Código %s", codigoIdentificador)
+    var publisher messagingmq.MessagePublisher
+    if tipo {
+        publisher = service.bombaPub
+        log.Printf("[BOMBA] Enviando a motor/bomba por %d segundos", despachoSegundos)
+    } else {
+        publisher = service.servoPub
+        log.Printf("[SERVO] Enviando a motor/servo por %d segundos", despachoSegundos)
+    }
+
+    if err := publisher.Publish(codigoIdentificador, despachoSegundos); err != nil {
+        return fmt.Errorf("error publicando el mensaje: %w", err)
+    }
+
+    go func() {
+        time.Sleep(time.Duration(despachoSegundos) * time.Second)
+        service.ChangeOrderState(codigoIdentificador, 1)
+    }()
+
+    return nil
 }
 
 

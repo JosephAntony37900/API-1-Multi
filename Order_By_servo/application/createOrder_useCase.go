@@ -17,7 +17,7 @@ func NewCreateOrder(repo repository.OrderRepository) *CreateOrder{
 }
 
 func (co *CreateOrder) Run(cantidad float64, estado int, costo float64, codigoIdentificador string, tipo bool) error {
-    idJabon := 1
+    idJabon :=1
 
     order, err := co.repo.FindById(codigoIdentificador)
     if err != nil && err.Error() != "no se encontró ninguna orden" {

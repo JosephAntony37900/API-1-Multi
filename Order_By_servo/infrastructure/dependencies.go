@@ -20,8 +20,9 @@ func InitOrderDependencies(engine *gin.Engine, db *sql.DB, rabbitmqURI string) {
     }
 
     orderRepo := repo_order.NewOrderRepoMySQL(db)
+    bombaPublisher := rabbitmq_order.NewRabbitMQBombaPublisher()
     servoPublisher := rabbitmq_order.NewRabbitMQServoPublisher()
-    orderService := service.NewOrderService(orderRepo, servoPublisher)
+    orderService := service.NewOrderService(orderRepo, servoPublisher, bombaPublisher)
 
     createOrderUseCase := app_order.NewCreateOrder(orderRepo)
     getOrderByCodigoIdUseCase := app_order.NewGetOrderByCodigoId(orderRepo)
@@ -33,10 +34,4 @@ func InitOrderDependencies(engine *gin.Engine, db *sql.DB, rabbitmqURI string) {
 
     routes_order.SetupOrderRoutes(engine, createOrderController, updateOrderController, getOrderByCodigoIdController)
 
-    go func() {
-        err := rabbitmq_order.StartInfraredConsumer(orderService)
-        if err != nil {
-            log.Fatalf("Error al consumir mensajes de RabbitMQ para Order: %v", err)
-        }
-    }()
 }

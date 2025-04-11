@@ -1,7 +1,7 @@
 package messagingmq
 
-type ServoMessagePublisher interface {
-    PublishToServoQueue(codigoIdentificador string, despachoSegundos int) error
+type MessagePublisher interface {
+    Publish(codigoIdentificador string, despachoSegundos int) error
 }
 
 type Message struct {
@@ -11,6 +11,5 @@ type Message struct {
 }
 
 type OrderProcessor interface {
-    ProcessOrder(codigoIdentificador string, despachoSegundos int, infrarrojoEstado string, infrarrojoTipo bool) error
-    GetLastInfraredState(codigoIdentificador string) (*Message, error)
+    ProcessOrder(codigoIdentificador string, despachoSegundos int, tipo bool) error
 }
