@@ -6,10 +6,9 @@ import (
 	"os"
 
 	level_infra "github.com/JosephAntony37900/API-1-Multi/Level_reading/infrastructure"
-	order_infra "github.com/JosephAntony37900/API-1-Multi/Order_By_servo/infrastructure"
+	order_infra "github.com/JosephAntony37900/API-1-Multi/Order/infrastructure"
 	soap_infra "github.com/JosephAntony37900/API-1-Multi/Soaps/infrastructure"
 	user_infra "github.com/JosephAntony37900/API-1-Multi/Users/infraestructure"
-	order_bomba "github.com/JosephAntony37900/API-1-Multi/Order_By_bomba/infrastructure"
 	"github.com/JosephAntony37900/API-1-Multi/helpers"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -39,7 +38,6 @@ func main() {
 	soap_infra.InitSoapDependencies(engine, db)
 	order_infra.InitOrderDependencies(engine, db, rabbitmqURI)
 	level_infra.InitLevelDependencies(engine, db, rabbitmqURI)
-	order_bomba.InitOrderBombaDependencies(engine, db, rabbitmqURI)
 
 	engine.Run("0.0.0.0:8000")
 }
