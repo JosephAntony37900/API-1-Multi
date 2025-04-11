@@ -1,6 +1,6 @@
 package repository
 
-import "github.com/JosephAntony37900/API-1-Multi/Order_By_servo/domain/entities"
+import "github.com/JosephAntony37900/API-1-Multi/Order/domain/entities"
 
 type OrderRepository interface {
 	Save(orders entities.Order) error
